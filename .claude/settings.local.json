@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm -v)",
+      "Bash(py --version)",
+      "Bash(mkdir -p \"C:\\\\Users\\\\rheni\\\\OneDrive\\\\Desktop\\\\canaan_erp\\\\.claude\")",
+      "Bash(rm -rf \"C:\\\\Users\\\\rheni\\\\OneDrive\\\\Desktop\\\\canaan_erp\\\\frontend\\\\.claude\")"
+    ]
+  }
+}

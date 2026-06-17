@@ -1,0 +1,28 @@
+export type Truck = {
+  id: string;
+  truckId: string;
+  registrationNumber: string;
+  manufacturer: string;
+  modelName: string;
+  truckType: string;
+  truckPhotosFileName: string | null;
+  tyreLayout: string;
+  odometer: string;
+  rcDate: string;
+  rcDocumentUrl: string | null;
+  fcDate: string;
+  fcExpiryDate: string;
+  fcDocumentFileName: string | null;
+  roadTaxDate: string;
+  roadTaxNumber: string;
+  roadTaxDocumentFileName: string | null;
+  insuranceExpiryDate: string;
+  nationalPermitNumber: string;
+  nationalPermitDate: string;
+  nationalPermitProofFileName: string | null;
+  localPermitNumber: string;
+  localPermitDate: string;
+  localPermitProofFileName: string | null;
+  pollutionCertificateDate: string;
+  pollutionCertificateProofFileName: string | null;
+};
