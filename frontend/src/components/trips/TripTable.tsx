@@ -85,7 +85,7 @@ export function TripTable({ trips, drivers, trucks, customers, onEdit, onMarkSta
                 <td className="px-4 py-3 text-gray-600">{trip.assignedDate}</td>
                 <td className="px-4 py-3 text-gray-600">{driver?.name ?? "—"}</td>
                 <td className="px-4 py-3 text-gray-600">{truck?.registrationNumber ?? "—"}</td>
-                {(onEdit || onCancel || onCloseTrip) && (
+                {(onEdit || onMarkStarted || onMarkCompleted || onCancel || onCloseTrip) && (
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2">
                       {onEdit && trip.status !== "Cancelled" && trip.status !== "Completed" && (
