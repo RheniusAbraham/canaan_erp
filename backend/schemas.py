@@ -389,10 +389,45 @@ class TripClosureCreate(OrmBase):
     transport_amount: Decimal
     billing_amount: Decimal
     driver_advance_amount: Optional[Decimal] = None
+    additional_driver_advance_amount: Optional[Decimal] = None
     payment_mode: PaymentMode
+
+    # Trip Distance Details
+    starting_odometer: Optional[Decimal] = None
+    ending_odometer: Optional[Decimal] = None
+    total_distance: Optional[Decimal] = None
+
+    # Cargo Weight Details
+    gross_weight: Optional[Decimal] = None
+    tare_weight: Optional[Decimal] = None
+    net_weight: Optional[Decimal] = None
+
+    # Trip Fuel Details
+    bunk_name: Optional[str] = None
+    diesel_quantity: Optional[Decimal] = None
+    fuel_total_cost: Optional[Decimal] = None
+
+    # Trip Expenses
+    total_halt_days: Optional[int] = 0
+    halt_remarks: Optional[str] = None
+    drivers_compensation: Optional[Decimal] = None
+    halt_compensation: Optional[Decimal] = None
+    port_pass_expense: Optional[Decimal] = None
+    weight_sheet_expense: Optional[Decimal] = None
+    mamol_expense: Optional[Decimal] = None
+    claimable_mamol_expense: Optional[Decimal] = None
+    traffic_rto_police_expense: Optional[Decimal] = None
+    lift_on_off_expense: Optional[Decimal] = None
+    crane_operator_expense: Optional[Decimal] = None
+    parking_expenses: Optional[Decimal] = None
+    puncture_expense: Optional[Decimal] = None
+    spare_parts_expense: Optional[Decimal] = None
+    other_expenses: Optional[Decimal] = None
+    toll_expenses: Optional[Decimal] = None
+
+    # Halt Information (kept for backward compatibility)
     company_halt_days: Optional[int] = 0
     party_halt_days: Optional[int] = 0
-    halt_remarks: Optional[str] = None
 
 
 class TripClosureOut(TripClosureCreate):

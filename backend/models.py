@@ -313,10 +313,46 @@ class TripClosure(Base):
     transport_amount = Column(Numeric(10, 2), default=0)
     billing_amount = Column(Numeric(10, 2), default=0)
     driver_advance_amount = Column(Numeric(10, 2), default=0)
+    additional_driver_advance_amount = Column(Numeric(10, 2), default=0)
     payment_mode = Column(Enum("Cash", "UPI", "Bank Transfer", "Cheque", "NEFT / RTGS"))
+
+    # Trip Distance Details
+    starting_odometer = Column(Numeric(10, 2), default=0)
+    ending_odometer = Column(Numeric(10, 2), default=0)
+    total_distance = Column(Numeric(10, 2), default=0)
+
+    # Cargo Weight Details
+    gross_weight = Column(Numeric(10, 2), default=0)
+    tare_weight = Column(Numeric(10, 2), default=0)
+    net_weight = Column(Numeric(10, 2), default=0)
+
+    # Trip Fuel Details
+    bunk_name = Column(String(200))
+    diesel_quantity = Column(Numeric(10, 2), default=0)
+    fuel_total_cost = Column(Numeric(10, 2), default=0)
+
+    # Trip Expenses
+    total_halt_days = Column(Integer, default=0)
+    halt_remarks = Column(Text)
+    drivers_compensation = Column(Numeric(10, 2), default=0)
+    halt_compensation = Column(Numeric(10, 2), default=0)
+    port_pass_expense = Column(Numeric(10, 2), default=0)
+    weight_sheet_expense = Column(Numeric(10, 2), default=0)
+    mamol_expense = Column(Numeric(10, 2), default=0)
+    claimable_mamol_expense = Column(Numeric(10, 2), default=0)
+    traffic_rto_police_expense = Column(Numeric(10, 2), default=0)
+    lift_on_off_expense = Column(Numeric(10, 2), default=0)
+    crane_operator_expense = Column(Numeric(10, 2), default=0)
+    parking_expenses = Column(Numeric(10, 2), default=0)
+    puncture_expense = Column(Numeric(10, 2), default=0)
+    spare_parts_expense = Column(Numeric(10, 2), default=0)
+    other_expenses = Column(Numeric(10, 2), default=0)
+    toll_expenses = Column(Numeric(10, 2), default=0)
+
+    # Halt Information (kept for backward compatibility)
     company_halt_days = Column(Integer, default=0)
     party_halt_days = Column(Integer, default=0)
-    halt_remarks = Column(Text)
+
     created_at = Column(DateTime, default=func.now())
     updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
 
