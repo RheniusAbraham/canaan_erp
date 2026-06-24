@@ -30,10 +30,35 @@ const emptyForm = (tripId: string): TripClosureData => ({
   transportAmount: "",
   billingAmount: "",
   driverAdvanceAmount: "",
+  additionalDriverAdvanceAmount: "",
   paymentMode: "",
+  startingOdometer: "",
+  endingOdometer: "",
+  totalDistance: "",
+  grossWeight: "",
+  tareWeight: "",
+  netWeight: "",
+  bunkName: "",
+  dieselQuantity: "",
+  fuelTotalCost: "",
+  totalHaltDays: "",
+  haltRemarks: "",
+  driversCompensation: "",
+  haltCompensation: "",
+  portPassExpense: "",
+  weightSheetExpense: "",
+  mamolExpense: "",
+  claimableMamolExpense: "",
+  trafficRtoPoliceExpense: "",
+  liftOnOffExpense: "",
+  craneOperatorExpense: "",
+  parkingExpenses: "",
+  punctureExpense: "",
+  sparePartsExpense: "",
+  otherExpenses: "",
+  tollExpenses: "",
   companyHaltDays: "",
   partyHaltDays: "",
-  haltRemarks: "",
 });
 
 type CloseTripDialogProps = {
@@ -208,6 +233,16 @@ export function CloseTripDialog({ open, trip, driver, truck, onClose, onSubmit }
                 placeholder="e.g. 2000"
               />
             </Field>
+            <Field label="Additional Driver Advance Amount (₹)">
+              <input
+                type="number"
+                min="0"
+                value={form.additionalDriverAdvanceAmount}
+                onChange={(e) => update("additionalDriverAdvanceAmount", e.target.value)}
+                className={inputClass}
+                placeholder="e.g. 1000"
+              />
+            </Field>
             <Field label="Payment Mode" className="sm:col-span-2">
               <select
                 required
@@ -224,9 +259,288 @@ export function CloseTripDialog({ open, trip, driver, truck, onClose, onSubmit }
           </div>
         </section>
 
-        {/* 5. Halt Information */}
+        {/* 5. Trip Distance Details */}
         <section className="flex flex-col gap-4">
-          <p className={sectionHeadingClass}>5. Halt Information</p>
+          <p className={sectionHeadingClass}>5. Trip Distance Details</p>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <Field label="Starting Odometer (km)">
+              <input
+                type="number"
+                min="0"
+                value={form.startingOdometer}
+                onChange={(e) => update("startingOdometer", e.target.value)}
+                className={inputClass}
+                placeholder="e.g. 45000"
+              />
+            </Field>
+            <Field label="Ending Odometer (km)">
+              <input
+                type="number"
+                min="0"
+                value={form.endingOdometer}
+                onChange={(e) => update("endingOdometer", e.target.value)}
+                className={inputClass}
+                placeholder="e.g. 45350"
+              />
+            </Field>
+            <Field label="Total Distance (km)">
+              <input
+                type="number"
+                readOnly
+                disabled
+                value={form.startingOdometer && form.endingOdometer
+                  ? (parseInt(form.endingOdometer) - parseInt(form.startingOdometer)).toString()
+                  : ""}
+                className={readonlyClass}
+                placeholder="Auto-calculated"
+              />
+            </Field>
+          </div>
+        </section>
+
+        {/* 6. Cargo Weight Details */}
+        <section className="flex flex-col gap-4">
+          <p className={sectionHeadingClass}>6. Cargo Weight Details</p>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <Field label="Gross Weight (kg)">
+              <input
+                type="number"
+                min="0"
+                value={form.grossWeight}
+                onChange={(e) => update("grossWeight", e.target.value)}
+                className={inputClass}
+                placeholder="e.g. 20000"
+              />
+            </Field>
+            <Field label="Tare Weight (kg)">
+              <input
+                type="number"
+                min="0"
+                value={form.tareWeight}
+                onChange={(e) => update("tareWeight", e.target.value)}
+                className={inputClass}
+                placeholder="e.g. 2500"
+              />
+            </Field>
+            <Field label="Net Weight (kg)">
+              <input
+                type="number"
+                min="0"
+                value={form.netWeight}
+                onChange={(e) => update("netWeight", e.target.value)}
+                className={inputClass}
+                placeholder="e.g. 17500"
+              />
+            </Field>
+          </div>
+        </section>
+
+        {/* 7. Trip Fuel Details */}
+        <section className="flex flex-col gap-4">
+          <p className={sectionHeadingClass}>7. Trip Fuel Details</p>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <Field label="Name of the Bunk" className="sm:col-span-2">
+              <input
+                type="text"
+                value={form.bunkName}
+                onChange={(e) => update("bunkName", e.target.value)}
+                className={inputClass}
+                placeholder="e.g. Shell Fuel Station, Coimbatore"
+              />
+            </Field>
+            <Field label="Diesel Quantity (Litres)">
+              <input
+                type="number"
+                min="0"
+                step="0.1"
+                value={form.dieselQuantity}
+                onChange={(e) => update("dieselQuantity", e.target.value)}
+                className={inputClass}
+                placeholder="e.g. 85"
+              />
+            </Field>
+            <Field label="Total Cost (₹)">
+              <input
+                type="number"
+                min="0"
+                value={form.fuelTotalCost}
+                onChange={(e) => update("fuelTotalCost", e.target.value)}
+                className={inputClass}
+                placeholder="e.g. 6800"
+              />
+            </Field>
+          </div>
+        </section>
+
+        {/* 8. Trip Expenses */}
+        <section className="flex flex-col gap-4">
+          <p className={sectionHeadingClass}>8. Trip Expenses</p>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <Field label="Total Halt Days">
+              <input
+                type="number"
+                min="0"
+                value={form.totalHaltDays}
+                onChange={(e) => update("totalHaltDays", e.target.value)}
+                className={inputClass}
+                placeholder="0"
+              />
+            </Field>
+            <Field label="Halt Remarks" className="sm:col-span-2">
+              <textarea
+                rows={2}
+                value={form.haltRemarks}
+                onChange={(e) => update("haltRemarks", e.target.value)}
+                className={inputClass}
+                placeholder="e.g. Delayed at port due to documentation"
+              />
+            </Field>
+            <Field label="Driver's Compensation (₹)">
+              <input
+                type="number"
+                min="0"
+                value={form.driversCompensation}
+                onChange={(e) => update("driversCompensation", e.target.value)}
+                className={inputClass}
+                placeholder="e.g. 500"
+              />
+            </Field>
+            <Field label="Halt Compensation (₹)">
+              <input
+                type="number"
+                min="0"
+                value={form.haltCompensation}
+                onChange={(e) => update("haltCompensation", e.target.value)}
+                className={inputClass}
+                placeholder="e.g. 300"
+              />
+            </Field>
+            <Field label="Port Pass Expense (பாஸ்) (₹)">
+              <input
+                type="number"
+                min="0"
+                value={form.portPassExpense}
+                onChange={(e) => update("portPassExpense", e.target.value)}
+                className={inputClass}
+                placeholder="e.g. 250"
+              />
+            </Field>
+            <Field label="Weight Sheet Expense (எடை) (₹)">
+              <input
+                type="number"
+                min="0"
+                value={form.weightSheetExpense}
+                onChange={(e) => update("weightSheetExpense", e.target.value)}
+                className={inputClass}
+                placeholder="e.g. 150"
+              />
+            </Field>
+            <Field label="Mamol Expense (இறக்கு / ஏற்று மாமூல்) (₹)">
+              <input
+                type="number"
+                min="0"
+                value={form.mamolExpense}
+                onChange={(e) => update("mamolExpense", e.target.value)}
+                className={inputClass}
+                placeholder="e.g. 400"
+              />
+            </Field>
+            <Field label="Claimable Mamol Expense (திரும்பப் பெறக்கூடிய இறக்கு / ஏற்று மாமூல்) (₹)">
+              <input
+                type="number"
+                min="0"
+                value={form.claimableMamolExpense}
+                onChange={(e) => update("claimableMamolExpense", e.target.value)}
+                className={inputClass}
+                placeholder="e.g. 200"
+              />
+            </Field>
+            <Field label="Traffic/RTO / Police Expense (₹)">
+              <input
+                type="number"
+                min="0"
+                value={form.trafficRtoPoliceExpense}
+                onChange={(e) => update("trafficRtoPoliceExpense", e.target.value)}
+                className={inputClass}
+                placeholder="e.g. 100"
+              />
+            </Field>
+            <Field label="Lift On / Off (லிப்டான்) (₹)">
+              <input
+                type="number"
+                min="0"
+                value={form.liftOnOffExpense}
+                onChange={(e) => update("liftOnOffExpense", e.target.value)}
+                className={inputClass}
+                placeholder="e.g. 500"
+              />
+            </Field>
+            <Field label="Crane Operator Expense (₹)">
+              <input
+                type="number"
+                min="0"
+                value={form.craneOperatorExpense}
+                onChange={(e) => update("craneOperatorExpense", e.target.value)}
+                className={inputClass}
+                placeholder="e.g. 600"
+              />
+            </Field>
+            <Field label="Parking Expenses (₹)">
+              <input
+                type="number"
+                min="0"
+                value={form.parkingExpenses}
+                onChange={(e) => update("parkingExpenses", e.target.value)}
+                className={inputClass}
+                placeholder="e.g. 200"
+              />
+            </Field>
+            <Field label="Puncture Expense (₹)">
+              <input
+                type="number"
+                min="0"
+                value={form.punctureExpense}
+                onChange={(e) => update("punctureExpense", e.target.value)}
+                className={inputClass}
+                placeholder="e.g. 1500"
+              />
+            </Field>
+            <Field label="Spare Parts Expense (₹)">
+              <input
+                type="number"
+                min="0"
+                value={form.sparePartsExpense}
+                onChange={(e) => update("sparePartsExpense", e.target.value)}
+                className={inputClass}
+                placeholder="e.g. 2000"
+              />
+            </Field>
+            <Field label="Other Expenses (₹)">
+              <input
+                type="number"
+                min="0"
+                value={form.otherExpenses}
+                onChange={(e) => update("otherExpenses", e.target.value)}
+                className={inputClass}
+                placeholder="e.g. 500"
+              />
+            </Field>
+            <Field label="Toll Expenses (₹)">
+              <input
+                type="number"
+                min="0"
+                value={form.tollExpenses}
+                onChange={(e) => update("tollExpenses", e.target.value)}
+                className={inputClass}
+                placeholder="e.g. 1200"
+              />
+            </Field>
+          </div>
+        </section>
+
+        {/* 9. Halt Information */}
+        <section className="flex flex-col gap-4">
+          <p className={sectionHeadingClass}>9. Halt Information</p>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Field label="Company Halt Days">
               <input

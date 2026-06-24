@@ -15,10 +15,43 @@ export type TripClosureData = {
   transportAmount: string;
   billingAmount: string;
   driverAdvanceAmount: string;
+  additionalDriverAdvanceAmount: string;
   paymentMode: PaymentMode | "";
 
-  // Halt Information
+  // Trip Distance Details
+  startingOdometer: string;
+  endingOdometer: string;
+  totalDistance: string;
+
+  // Cargo Weight Details
+  grossWeight: string;
+  tareWeight: string;
+  netWeight: string;
+
+  // Trip Fuel Details
+  bunkName: string;
+  dieselQuantity: string;
+  fuelTotalCost: string;
+
+  // Trip Expenses
+  totalHaltDays: string;
+  haltRemarks: string;
+  driversCompensation: string;
+  haltCompensation: string;
+  portPassExpense: string;
+  weightSheetExpense: string;
+  mamolExpense: string;
+  claimableMamolExpense: string;
+  trafficRtoPoliceExpense: string;
+  liftOnOffExpense: string;
+  craneOperatorExpense: string;
+  parkingExpenses: string;
+  punctureExpense: string;
+  sparePartsExpense: string;
+  otherExpenses: string;
+  tollExpenses: string;
+
+  // Halt Information (kept for backward compatibility)
   companyHaltDays: string;
   partyHaltDays: string;
-  haltRemarks: string;
 };
