@@ -1,29 +1,91 @@
 "use client";
 
-import { useState } from "react";
-import { useTripWorkflow } from "@/context/TripWorkflowContext";
-import { initialDrivers } from "@/lib/driver-data";
-import { initialTrucks } from "@/lib/truck-data";
-import { initialCustomers } from "@/lib/customer-data";
-import { initialTrips } from "@/lib/trip-data";
+import { useEffect, useState } from "react";
+import { tripsApi, driversApi, trucksApi, customersApi } from "@/lib/api";
+import type { Trip } from "@/types/trip";
+import type { Driver } from "@/types/driver";
+import type { Truck } from "@/types/truck";
+import type { Customer } from "@/types/customer";
+import type { TripSheetData } from "@/types/trip-sheet";
+import type { TripClosureData } from "@/types/trip-closure";
 import { n, calcTripExpenses } from "@/types/trip-sheet";
 
 export default function TripFinalizationPage() {
-  const { closures, sheets, verifications } = useTripWorkflow();
-  const [invoiced, setInvoiced] = useState<Set<string>>(new Set());
+  const [trips, setTrips] = useState<Trip[]>([]);
+  const [drivers, setDrivers] = useState<Driver[]>([]);
+  const [trucks, setTrucks] = useState<Truck[]>([]);
+  const [customers, setCustomers] = useState<Customer[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const driverById = new Map(initialDrivers.map((d) => [d.driverId, d]));
-  const truckById = new Map(initialTrucks.map((t) => [t.truckId, t]));
-  const customerById = new Map(initialCustomers.map((c) => [c.id, c]));
+  const [closures, setClosures] = useState<Map<string, TripClosureData>>(new Map());
+  const [sheets, setSheets] = useState<Map<string, TripSheetData>>(new Map());
+  const [invoicedIds, setInvoicedIds] = useState<Set<string>>(new Set());
 
-  // Only show trips that have been verified
-  const verifiedTrips = initialTrips.filter((t) => verifications.has(t.id));
+  useEffect(() => {
+    Promise.all([tripsApi.list(), driversApi.list(), trucksApi.list(), customersApi.list()])
+      .then(([allTrips, d, tr, c]) => {
+        setDrivers(d);
+        setTrucks(tr);
+        setCustomers(c);
 
-  const fmt = (n: number) =>
-    `₹${n.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+        // Only trips that are verified
+        const verifiedTrips = allTrips.filter(
+          (t) => (t as any).verificationStatus === "verified"
+        );
+        setTrips(verifiedTrips);
+
+        // Pre-populate invoiced IDs
+        const invoiced = new Set<string>(
+          allTrips.filter((t) => (t as any).isInvoiced === true).map((t) => t.id)
+        );
+        setInvoicedIds(invoiced);
+
+        // Fetch closures and sheets for verified trips
+        return Promise.all([
+          Promise.all(
+            verifiedTrips.map((trip) =>
+              tripsApi.getClosure(trip.id).then((closure) => ({ tripId: trip.id, closure })).catch(() => null)
+            )
+          ),
+          Promise.all(
+            verifiedTrips.map((trip) =>
+              tripsApi.getSheet(trip.id).then((sheet) => ({ tripId: trip.id, sheet })).catch(() => null)
+            )
+          ),
+        ]);
+      })
+      .then(([closureResults, sheetResults]) => {
+        const closureMap = new Map<string, TripClosureData>();
+        for (const result of closureResults) {
+          if (result) closureMap.set(result.tripId, result.closure);
+        }
+        setClosures(closureMap);
+
+        const sheetMap = new Map<string, TripSheetData>();
+        for (const result of sheetResults) {
+          if (result) sheetMap.set(result.tripId, result.sheet);
+        }
+        setSheets(sheetMap);
+      })
+      .finally(() => setLoading(false));
+  }, []);
+
+  const driverById = new Map(drivers.map((d) => [d.driverId, d]));
+  const truckById = new Map(trucks.map((t) => [t.truckId, t]));
+  const customerById = new Map(customers.map((c) => [c.id, c]));
+
+  async function handleGenerateInvoice(tripId: string) {
+    await tripsApi.invoice(tripId);
+    setInvoicedIds((prev) => new Set([...prev, tripId]));
+  }
+
+  const fmt = (v: number) =>
+    `₹${v.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+  if (loading) return <div className="p-6 text-sm text-gray-500">Loading...</div>;
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="animate-stagger flex flex-col gap-6">
       <div>
         <h1 className="text-2xl font-bold text-gray-900">Trip Finalization</h1>
         <p className="mt-1 text-sm text-gray-500">
@@ -31,7 +93,7 @@ export default function TripFinalizationPage() {
         </p>
       </div>
 
-      {verifiedTrips.length === 0 ? (
+      {trips.length === 0 ? (
         <div className="rounded-xl border border-gray-200 bg-white p-10 text-center text-sm text-gray-500">
           No verified trips yet. Verify trip data on the{" "}
           <a href="/trips/verification" className="text-blue-600 underline">Trip Verification</a> page first.
@@ -50,16 +112,16 @@ export default function TripFinalizationPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
-              {verifiedTrips.map((trip) => {
+              {trips.map((trip) => {
                 const closure = closures.get(trip.id);
                 const sheet = sheets.get(trip.id);
                 const driver = driverById.get(trip.driverId);
                 const truck = truckById.get(trip.vehicleId);
                 const customer = customerById.get(trip.customerId);
-                const isInvoiced = invoiced.has(trip.id);
+                const isInvoiced = invoicedIds.has(trip.id);
 
                 const totalTransport = sheet ? n(sheet.hireAmount) : 0;
-                const totalBilling   = sheet ? calcTripExpenses(sheet) : 0;
+                const totalBilling = sheet ? calcTripExpenses(sheet) : 0;
 
                 return (
                   <tr key={trip.id} className="hover:bg-gray-50">
@@ -87,7 +149,7 @@ export default function TripFinalizationPage() {
                       ) : (
                         <button
                           type="button"
-                          onClick={() => setInvoiced((prev) => new Set([...prev, trip.id]))}
+                          onClick={() => handleGenerateInvoice(trip.id)}
                           className="rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-700"
                         >
                           GENERATE INVOICE

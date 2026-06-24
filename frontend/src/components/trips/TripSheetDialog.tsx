@@ -25,9 +25,9 @@ const emptySheet = (tripId: string): TripSheetData => ({
   tripSheetNo: "", serialNo: "", containerNo: "", containerType: "", line: "", tripType: "", vehicleId: "", date: "", driverId: "",
   from: "", to: "",
   hireAmount: "", driverAdvance: "", driverAdvanceAdditional: "",
-  mileage: "", startKm: "", endKm: "", totalKm: "", cargoWeight: "", grossWeight: "", tareWeight: "", netWeight: "",
+  startKm: "", endKm: "", totalKm: "", cargoWeight: "", grossWeight: "", tareWeight: "", netWeight: "",
   dieselEntries: [emptyDieselEntry()],
-  totalDiesel: "", dieselRate: "", dieselExpense: "", dieselMileage: "",
+  totalDiesel: "", dieselRate: "", dieselExpense: "",
   driverPay: "", driverSettlementAdvance: "", driverSettlementAdvanceAdditional: "", driverBalance: "",
   totalHaltDays: "", haltRemarks: "", haltPay: "",
   portPassExpense: "", weightSheetExpense: "", mamolExpense: "", claimableMamolExpense: "",
@@ -71,8 +71,6 @@ export function TripSheetDialog({ open, trip, closure, existingSheet, readOnly, 
       const totalD  = n(key === "totalDiesel" ? (value as string) : next.totalDiesel);
       const dRate   = n(key === "dieselRate"  ? (value as string) : next.dieselRate);
       next.dieselExpense = totalD && dRate ? String((totalD * dRate).toFixed(2)) : next.dieselExpense;
-      const totKm   = n(next.totalKm);
-      next.dieselMileage = totKm && totalD ? String((totKm / totalD).toFixed(2)) : next.dieselMileage;
 
       const dPay  = n(key === "driverPay"  ? (value as string) : next.driverPay);
       const dAdv  = n(key === "driverSettlementAdvance" ? (value as string) : next.driverSettlementAdvance);
@@ -198,9 +196,6 @@ export function TripSheetDialog({ open, trip, closure, existingSheet, readOnly, 
         {/* ── 4. Trip Distance & Cargo ── */}
         <p className={sh}>Trip Distance & Cargo</p>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <Field label="Mileage (km/L)">
-            <input type="number" min="0" className={fc} value={form.mileage} readOnly={ro} onChange={(e) => set("mileage", e.target.value)} placeholder="e.g. 4.5" />
-          </Field>
           <Field label="Start km *">
             <input type="number" min="0" className={fc} value={form.startKm} readOnly={ro} onChange={(e) => set("startKm", e.target.value)} placeholder="e.g. 84000" />
           </Field>
@@ -277,9 +272,6 @@ export function TripSheetDialog({ open, trip, closure, existingSheet, readOnly, 
           </Field>
           <Field label="Diesel Expense *">
             <input type="number" className={`${fc} bg-gray-50`} value={form.dieselExpense} readOnly placeholder="Auto-calculated" />
-          </Field>
-          <Field label="Mileage (km/L) *">
-            <input type="number" className={`${fc} bg-gray-50`} value={form.dieselMileage} readOnly placeholder="Auto-calculated" />
           </Field>
         </div>
 

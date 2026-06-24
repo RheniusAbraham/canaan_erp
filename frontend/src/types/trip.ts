@@ -10,7 +10,7 @@ export type TripStatus =
 
 export type TripCategory = "LOCAL" | "LOCAL CFS" | "OUTSTATION" | "SHIFTING";
 
-export type MovementCategory = "Company" | "Outsourced";
+export type MovementCategory = "self" | "third party";
 
 export type CargoClassification =
   | "IMPORT"
@@ -26,26 +26,21 @@ export type ContainerSpecification =
   | "2 X 20 FEET CONTAINERS"
   | "OPEN LOAD CARGO";
 
-export type BillingType =
-  | "NORMAL"
-  | "UPTO 20 TONS AND UNDER"
-  | "20 - 25 TONS"
-  | "25 - 28 TONS"
-  | "28 - 30 TONS"
-  | "TON BASED";
+export type BillTo = "CUSTOMER" | "CONSIGNEE";
 
-export type TransportMethod = "Own Fleet" | "Hired Vehicle" | "Third-Party Transporter";
+export type PaymentType = "Credit" | "Cash" | "Fuel";
 
-export type BillingMethod = "To Pay" | "Prepaid" | "Credit";
+export type TransportMethod = "Own Fleet" | "Third-Party Transporter";
 
-export type DriverAdvancePaymentMethod = "Cash" | "UPI" | "Bank Transfer";
+export type DriverAdvancePaymentMethod = "None" | "CASH" | "NEFT/IMPS/UPI" | "Both";
 
-export type DriverCompensationType = "Per Trip" | "Per Kilometer" | "Fixed Salary";
+export type DriverCompensationType = "Normal" | "FIXED";
 
 export type Trip = {
   id: string;
   tripId: string;
   status: TripStatus;
+  assignedDate: string;
 
   // Booking Information
   bookingReferenceNo: string;
@@ -56,12 +51,14 @@ export type Trip = {
   // Customer Information
   customerId: string;
   shipperConsignee: string;
-  billingAccount: string;
 
   // Cargo Information
-  cargoContainerReference: string;
   cargoClassification: CargoClassification | "";
   containerSpecification: ContainerSpecification | "";
+  containerNumber: string;
+  containerNumber1: string;
+  containerNumber2: string;
+  cargoReference: string;
   releaseOrderReference: string;
   cargoWeight: string;
 
@@ -80,8 +77,8 @@ export type Trip = {
   vehicleId: string;
 
   // Payment & Advances
-  billingMethod: BillingMethod | "";
-  billingType: BillingType | "";
+  billTo: BillTo | "";
+  paymentType: PaymentType | "";
   customerCashAdvance: string;
   customerFuelAdvanceAmount: string;
   customerFuelAdvanceLitres: string;
@@ -92,7 +89,8 @@ export type Trip = {
   driverCompensationType: DriverCompensationType | "";
 
   // Transport Cost Details
-  transportHireCharge: string;
+  transportHireAmount: string;
+  transportCrossingAmount: string;
   finalSettlementAmount: string;
 
   // Operational Notes

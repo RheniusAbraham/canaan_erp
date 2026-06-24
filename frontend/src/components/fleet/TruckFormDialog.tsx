@@ -4,15 +4,26 @@ import { useEffect, useState, type FormEvent } from "react";
 import { FileText, ImageIcon } from "lucide-react";
 import { Dialog } from "@/components/ui/Dialog";
 import { Field, inputClass } from "@/components/ui/Field";
-import { addYearsToDate, generateTruckId, TRUCK_TYPE_OPTIONS } from "@/lib/truck-data";
+import { addYearsToDate, generateTruckId, TRUCK_TYPE_OPTIONS, BRANCH_OPTIONS } from "@/lib/truck-data";
 import { getTyreLayout, TYRE_LAYOUT_OPTIONS } from "@/lib/tyre-layouts";
 import { TyreLayoutDiagram } from "@/components/fleet/TyreLayoutDiagram";
 import type { Truck } from "@/types/truck";
 
+export type TruckFiles = {
+  photo?: File | null;
+  rc?: File | null;
+  fc?: File | null;
+  road_tax?: File | null;
+  insurance_proof?: File | null;
+  national_permit?: File | null;
+  local_permit?: File | null;
+  pollution_cert?: File | null;
+};
+
 type TruckFormDialogProps = {
   open: boolean;
   onClose: () => void;
-  onSave: (truck: Truck) => void;
+  onSave: (truck: Truck, files: TruckFiles) => void;
   initialData: Truck | null;
   existingTrucks: Truck[];
 };
@@ -21,30 +32,41 @@ const fileInputClass =
   "text-sm text-gray-600 file:mr-3 file:rounded-lg file:border-0 file:bg-blue-50 file:px-3 file:py-2 file:text-sm file:font-medium file:text-blue-600 hover:file:bg-blue-100";
 
 const emptyForm: Omit<Truck, "id" | "truckId"> = {
+  branchRegisteredTo: "",
   registrationNumber: "",
   manufacturer: "",
   modelName: "",
   truckType: "",
   truckPhotosFileName: null,
+  chassisNumber: "",
+  yearOfManufacture: "",
   tyreLayout: "",
+  odometerDuringPurchase: "",
   odometer: "",
   rcDate: "",
   rcDocumentUrl: null,
   fcDate: "",
   fcExpiryDate: "",
   fcDocumentFileName: null,
+  fcExpenses: "",
   roadTaxDate: "",
   roadTaxNumber: "",
   roadTaxDocumentFileName: null,
+  roadTaxExpenses: "",
   insuranceExpiryDate: "",
+  insuranceDocumentProofFileName: null,
   nationalPermitNumber: "",
   nationalPermitDate: "",
   nationalPermitProofFileName: null,
+  nationalPermitExpenses: "",
   localPermitNumber: "",
   localPermitDate: "",
   localPermitProofFileName: null,
+  localPermitExpenses: "",
   pollutionCertificateDate: "",
+  pollutionCertificateNumber: "",
   pollutionCertificateProofFileName: null,
+  pollutionCertificateExpenses: "",
 };
 
 export function TruckFormDialog({
@@ -55,6 +77,7 @@ export function TruckFormDialog({
   existingTrucks,
 }: TruckFormDialogProps) {
   const [form, setForm] = useState<Omit<Truck, "id" | "truckId">>(emptyForm);
+  const [files, setFiles] = useState<TruckFiles>({});
   const [fcExpiryTouched, setFcExpiryTouched] = useState(false);
 
   useEffect(() => {
@@ -65,6 +88,7 @@ export function TruckFormDialog({
         ...emptyForm,
       };
       setForm(rest);
+      setFiles({});
       setFcExpiryTouched(Boolean(initialData));
     }
   }, [open, initialData]);
@@ -86,11 +110,10 @@ export function TruckFormDialog({
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    onSave({
-      id: initialData?.id ?? crypto.randomUUID(),
-      truckId: initialData?.truckId ?? generateTruckId(existingTrucks),
-      ...form,
-    });
+    onSave(
+      { id: initialData?.id ?? crypto.randomUUID(), truckId: initialData?.truckId ?? generateTruckId(existingTrucks), ...form },
+      files,
+    );
   }
 
   const truckId = initialData?.truckId ?? generateTruckId(existingTrucks);
@@ -98,7 +121,7 @@ export function TruckFormDialog({
   return (
     <Dialog open={open} onClose={onClose} title={initialData ? "Edit Truck" : "Add Truck"}>
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-        <Field label="Truck ID">
+        <Field label="Truck ID" required>
           <input
             type="text"
             value={truckId}
@@ -108,8 +131,26 @@ export function TruckFormDialog({
           />
         </Field>
 
+        <Field label="Branch the Truck To be Registered" required>
+          <select
+            required
+            value={form.branchRegisteredTo}
+            onChange={(e) => update("branchRegisteredTo", e.target.value as Truck["branchRegisteredTo"])}
+            className={inputClass}
+          >
+            <option value="" disabled>
+              Select a branch
+            </option>
+            {BRANCH_OPTIONS.map((option) => (
+              <option key={option} value={option}>
+                {option}
+              </option>
+            ))}
+          </select>
+        </Field>
+
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <Field label="Truck Registration Number">
+          <Field label="Truck Registration Number" required>
             <input
               type="text"
               required
@@ -120,7 +161,7 @@ export function TruckFormDialog({
             />
           </Field>
 
-          <Field label="Manufacturer">
+          <Field label="Manufacturer" required>
             <input
               type="text"
               required
@@ -131,7 +172,7 @@ export function TruckFormDialog({
             />
           </Field>
 
-          <Field label="Model Name">
+          <Field label="Model Name" required>
             <input
               type="text"
               required
@@ -142,7 +183,30 @@ export function TruckFormDialog({
             />
           </Field>
 
-          <Field label="Truck Type">
+          <Field label="Chassis Number" required>
+            <input
+              type="text"
+              required
+              value={form.chassisNumber}
+              onChange={(e) => update("chassisNumber", e.target.value)}
+              className={inputClass}
+              placeholder="e.g. TATZ94AE7P7A0001"
+            />
+          </Field>
+
+          <Field label="Year of Manufacture" required>
+            <input
+              type="text"
+              required
+              value={form.yearOfManufacture}
+              onChange={(e) => update("yearOfManufacture", e.target.value)}
+              className={inputClass}
+              placeholder="e.g. 2019"
+              maxLength={4}
+            />
+          </Field>
+
+          <Field label="Truck Type" required>
             <input
               type="text"
               required
@@ -159,13 +223,15 @@ export function TruckFormDialog({
             </datalist>
           </Field>
 
-          <Field label="Truck Photos (PDF)">
+          <Field label="Truck Photos (PDF/Image)" required>
             <input
               type="file"
-              accept="application/pdf"
+              accept="application/pdf,image/*"
               onChange={(e) => {
                 const file = e.target.files?.[0];
-                if (file) update("truckPhotosFileName", file.name);
+                if (!file) return;
+                setFiles((prev) => ({ ...prev, photo: file }));
+                update("truckPhotosFileName", file.name);
               }}
               className={fileInputClass}
             />
@@ -177,13 +243,13 @@ export function TruckFormDialog({
             )}
           </Field>
 
-          <Field label="Odometer">
+          <Field label="Odometer During Purchase" required>
             <input
               type="number"
               required
               min="0"
-              value={form.odometer}
-              onChange={(e) => update("odometer", e.target.value)}
+              value={form.odometerDuringPurchase}
+              onChange={(e) => update("odometerDuringPurchase", e.target.value)}
               className={inputClass}
               placeholder="e.g. 84500"
             />
@@ -192,7 +258,7 @@ export function TruckFormDialog({
 
         <div className="rounded-lg border border-gray-200 p-4">
           <h3 className="mb-3 text-sm font-semibold text-gray-900">Choose the Tyre Layout</h3>
-          <Field label="Tyre Layout">
+          <Field label="Tyre Layout" required>
             <select
               required
               value={form.tyreLayout}
@@ -222,7 +288,7 @@ export function TruckFormDialog({
 
         <div className="rounded-lg border border-gray-200 p-4">
           <h3 className="mb-3 text-sm font-semibold text-gray-900">RC Details</h3>
-          <Field label="RC Date">
+          <Field label="RC Date" required>
             <input
               type="date"
               required
@@ -232,16 +298,15 @@ export function TruckFormDialog({
             />
           </Field>
 
-          <Field label="RC Document Proof (Image)" className="mt-4">
+          <Field label="RC Document Proof (PDF/Image)" className="mt-4">
             <input
               type="file"
-              accept="image/*"
+              accept="application/pdf,image/*"
               onChange={(e) => {
                 const file = e.target.files?.[0];
                 if (!file) return;
-                const reader = new FileReader();
-                reader.onload = () => update("rcDocumentUrl", reader.result as string);
-                reader.readAsDataURL(file);
+                setFiles((prev) => ({ ...prev, rc: file }));
+                update("rcDocumentUrl", file.name);
               }}
               className={fileInputClass}
             />
@@ -257,7 +322,7 @@ export function TruckFormDialog({
         <div className="rounded-lg border border-gray-200 p-4">
           <h3 className="mb-3 text-sm font-semibold text-gray-900">FC Details</h3>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Field label="FC Date">
+            <Field label="FC Date" required>
               <input
                 type="date"
                 required
@@ -267,7 +332,7 @@ export function TruckFormDialog({
               />
             </Field>
 
-            <Field label="FC Validity Date">
+            <Field label="FC Validity Date" required>
               <input
                 type="date"
                 required
@@ -284,10 +349,12 @@ export function TruckFormDialog({
           <Field label="FC Document Proof (PDF)" className="mt-4">
             <input
               type="file"
-              accept="application/pdf"
+              accept="application/pdf,image/*"
               onChange={(e) => {
                 const file = e.target.files?.[0];
-                if (file) update("fcDocumentFileName", file.name);
+                if (!file) return;
+                setFiles((prev) => ({ ...prev, fc: file }));
+                update("fcDocumentFileName", file.name);
               }}
               className={fileInputClass}
             />
@@ -298,12 +365,24 @@ export function TruckFormDialog({
               </span>
             )}
           </Field>
+
+          <Field label="Expenses For FC" className="mt-4">
+            <input
+              type="number"
+              min="0"
+              step="0.01"
+              value={form.fcExpenses}
+              onChange={(e) => update("fcExpenses", e.target.value)}
+              className={inputClass}
+              placeholder="e.g. 15000"
+            />
+          </Field>
         </div>
 
         <div className="rounded-lg border border-gray-200 p-4">
           <h3 className="mb-3 text-sm font-semibold text-gray-900">Road Tax</h3>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Field label="Road Tax Validity Date">
+            <Field label="Road Tax Validity Date" required>
               <input
                 type="date"
                 required
@@ -313,7 +392,7 @@ export function TruckFormDialog({
               />
             </Field>
 
-            <Field label="Road Tax Number">
+            <Field label="Road Tax Number" required>
               <input
                 type="text"
                 required
@@ -328,10 +407,12 @@ export function TruckFormDialog({
           <Field label="Road Tax Document Proof (PDF)" className="mt-4">
             <input
               type="file"
-              accept="application/pdf"
+              accept="application/pdf,image/*"
               onChange={(e) => {
                 const file = e.target.files?.[0];
-                if (file) update("roadTaxDocumentFileName", file.name);
+                if (!file) return;
+                setFiles((prev) => ({ ...prev, road_tax: file }));
+                update("roadTaxDocumentFileName", file.name);
               }}
               className={fileInputClass}
             />
@@ -342,22 +423,57 @@ export function TruckFormDialog({
               </span>
             )}
           </Field>
+
+          <Field label="Expenses For Road Tax" className="mt-4">
+            <input
+              type="number"
+              min="0"
+              step="0.01"
+              value={form.roadTaxExpenses}
+              onChange={(e) => update("roadTaxExpenses", e.target.value)}
+              className={inputClass}
+              placeholder="e.g. 8000"
+            />
+          </Field>
         </div>
 
-        <Field label="Insurance Expiry Date">
-          <input
-            type="date"
-            required
-            value={form.insuranceExpiryDate}
-            onChange={(e) => update("insuranceExpiryDate", e.target.value)}
-            className={inputClass}
-          />
-        </Field>
+        <div className="rounded-lg border border-gray-200 p-4">
+          <h3 className="mb-3 text-sm font-semibold text-gray-900">Insurance Details</h3>
+          <Field label="Insurance Expiry Date" required>
+            <input
+              type="date"
+              required
+              value={form.insuranceExpiryDate}
+              onChange={(e) => update("insuranceExpiryDate", e.target.value)}
+              className={inputClass}
+            />
+          </Field>
+
+          <Field label="Insurance Document Proof (PDF/Image)" className="mt-4">
+            <input
+              type="file"
+              accept="application/pdf,image/*"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (!file) return;
+                setFiles((prev) => ({ ...prev, insurance_proof: file }));
+                update("insuranceDocumentProofFileName", file.name);
+              }}
+              className={fileInputClass}
+            />
+            {form.insuranceDocumentProofFileName && (
+              <span className="mt-1 flex items-center gap-1.5 text-xs text-gray-500">
+                <FileText className="h-3.5 w-3.5" />
+                {form.insuranceDocumentProofFileName}
+              </span>
+            )}
+          </Field>
+        </div>
 
         <div className="rounded-lg border border-gray-200 p-4">
           <h3 className="mb-3 text-sm font-semibold text-gray-900">National Permit</h3>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Field label="National Permit Number">
+            <Field label="National Permit Number" required>
               <input
                 type="text"
                 required
@@ -368,7 +484,7 @@ export function TruckFormDialog({
               />
             </Field>
 
-            <Field label="National Permit Validity Date">
+            <Field label="National Permit Validity Date" required>
               <input
                 type="date"
                 required
@@ -382,10 +498,12 @@ export function TruckFormDialog({
           <Field label="National Permit Proof (PDF)" className="mt-4">
             <input
               type="file"
-              accept="application/pdf"
+              accept="application/pdf,image/*"
               onChange={(e) => {
                 const file = e.target.files?.[0];
-                if (file) update("nationalPermitProofFileName", file.name);
+                if (!file) return;
+                setFiles((prev) => ({ ...prev, national_permit: file }));
+                update("nationalPermitProofFileName", file.name);
               }}
               className={fileInputClass}
             />
@@ -396,12 +514,24 @@ export function TruckFormDialog({
               </span>
             )}
           </Field>
+
+          <Field label="Expenses For National Permit" className="mt-4">
+            <input
+              type="number"
+              min="0"
+              step="0.01"
+              value={form.nationalPermitExpenses}
+              onChange={(e) => update("nationalPermitExpenses", e.target.value)}
+              className={inputClass}
+              placeholder="e.g. 5000"
+            />
+          </Field>
         </div>
 
         <div className="rounded-lg border border-gray-200 p-4">
           <h3 className="mb-3 text-sm font-semibold text-gray-900">Local Permit</h3>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Field label="Local Permit Number">
+            <Field label="Local Permit Number" required>
               <input
                 type="text"
                 required
@@ -412,7 +542,7 @@ export function TruckFormDialog({
               />
             </Field>
 
-            <Field label="Local Permit Validity Date">
+            <Field label="Local Permit Validity Date" required>
               <input
                 type="date"
                 required
@@ -426,10 +556,12 @@ export function TruckFormDialog({
           <Field label="Local Permit Proof (PDF)" className="mt-4">
             <input
               type="file"
-              accept="application/pdf"
+              accept="application/pdf,image/*"
               onChange={(e) => {
                 const file = e.target.files?.[0];
-                if (file) update("localPermitProofFileName", file.name);
+                if (!file) return;
+                setFiles((prev) => ({ ...prev, local_permit: file }));
+                update("localPermitProofFileName", file.name);
               }}
               className={fileInputClass}
             />
@@ -440,27 +572,54 @@ export function TruckFormDialog({
               </span>
             )}
           </Field>
+
+          <Field label="Expenses For Local Permit" className="mt-4">
+            <input
+              type="number"
+              min="0"
+              step="0.01"
+              value={form.localPermitExpenses}
+              onChange={(e) => update("localPermitExpenses", e.target.value)}
+              className={inputClass}
+              placeholder="e.g. 2000"
+            />
+          </Field>
         </div>
 
         <div className="rounded-lg border border-gray-200 p-4">
           <h3 className="mb-3 text-sm font-semibold text-gray-900">Pollution Certificate</h3>
-          <Field label="Pollution Certificate Validity Date">
-            <input
-              type="date"
-              required
-              value={form.pollutionCertificateDate}
-              onChange={(e) => update("pollutionCertificateDate", e.target.value)}
-              className={inputClass}
-            />
-          </Field>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <Field label="Pollution Certificate Validity Date" required>
+              <input
+                type="date"
+                required
+                value={form.pollutionCertificateDate}
+                onChange={(e) => update("pollutionCertificateDate", e.target.value)}
+                className={inputClass}
+              />
+            </Field>
+
+            <Field label="Pollution Certificate Number" required>
+              <input
+                type="text"
+                required
+                value={form.pollutionCertificateNumber}
+                onChange={(e) => update("pollutionCertificateNumber", e.target.value)}
+                className={inputClass}
+                placeholder="e.g. TN09BR0012345"
+              />
+            </Field>
+          </div>
 
           <Field label="Pollution Certificate Proof (PDF)" className="mt-4">
             <input
               type="file"
-              accept="application/pdf"
+              accept="application/pdf,image/*"
               onChange={(e) => {
                 const file = e.target.files?.[0];
-                if (file) update("pollutionCertificateProofFileName", file.name);
+                if (!file) return;
+                setFiles((prev) => ({ ...prev, pollution_cert: file }));
+                update("pollutionCertificateProofFileName", file.name);
               }}
               className={fileInputClass}
             />
@@ -471,19 +630,31 @@ export function TruckFormDialog({
               </span>
             )}
           </Field>
+
+          <Field label="Expenses For Pollution Certificate" className="mt-4">
+            <input
+              type="number"
+              min="0"
+              step="0.01"
+              value={form.pollutionCertificateExpenses}
+              onChange={(e) => update("pollutionCertificateExpenses", e.target.value)}
+              className={inputClass}
+              placeholder="e.g. 500"
+            />
+          </Field>
         </div>
 
         <div className="mt-2 flex justify-end gap-3">
           <button
             type="button"
             onClick={onClose}
-            className="rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+            className="btn-interactive rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-700 transition-all duration-200 hover:bg-gray-50 active:scale-95"
           >
             Cancel
           </button>
           <button
             type="submit"
-            className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+            className="btn-interactive rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-all duration-200 hover:bg-blue-700 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {initialData ? "Save Changes" : "Add Truck"}
           </button>

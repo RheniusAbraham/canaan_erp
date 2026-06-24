@@ -24,6 +24,11 @@ const emptyForm: Omit<Customer, "id"> = {
   address: "",
   customerType: "",
   status: "",
+  isGta: "",
+  applicableForEInvoice: "",
+  tdsExemptionApplicable: "",
+  msmeDeclarationSubmitted: "",
+  gstExemptedCustomer: "",
 };
 
 export function CustomerFormDialog({ open, onClose, onSave, initialData }: CustomerFormDialogProps) {
@@ -51,7 +56,7 @@ export function CustomerFormDialog({ open, onClose, onSave, initialData }: Custo
   return (
     <Dialog open={open} onClose={onClose} title={initialData ? "Edit Customer" : "Add Customer"}>
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-        <Field label="Customer Photo">
+        <Field label="Customer Photo" required>
           <div className="flex items-center gap-4">
             <Avatar photoUrl={form.photoUrl} label={form.name || "?"} size={56} />
             <input
@@ -70,7 +75,7 @@ export function CustomerFormDialog({ open, onClose, onSave, initialData }: Custo
         </Field>
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <Field label="Customer Name">
+          <Field label="Customer Name" required>
             <input
               type="text"
               required
@@ -81,7 +86,7 @@ export function CustomerFormDialog({ open, onClose, onSave, initialData }: Custo
             />
           </Field>
 
-          <Field label="GSTIN">
+          <Field label="GSTIN" required>
             <input
               type="text"
               required
@@ -92,7 +97,7 @@ export function CustomerFormDialog({ open, onClose, onSave, initialData }: Custo
             />
           </Field>
 
-          <Field label="Contact Personnel Name">
+          <Field label="Contact Personnel Name" required>
             <input
               type="text"
               required
@@ -103,7 +108,7 @@ export function CustomerFormDialog({ open, onClose, onSave, initialData }: Custo
             />
           </Field>
 
-          <Field label="Phone">
+          <Field label="Phone" required>
             <input
               type="tel"
               required
@@ -114,7 +119,7 @@ export function CustomerFormDialog({ open, onClose, onSave, initialData }: Custo
             />
           </Field>
 
-          <Field label="Email">
+          <Field label="Email" required>
             <input
               type="email"
               required
@@ -125,7 +130,7 @@ export function CustomerFormDialog({ open, onClose, onSave, initialData }: Custo
             />
           </Field>
 
-          <Field label="Customer Type">
+          <Field label="Customer Type" required>
             <select
               required
               value={form.customerType}
@@ -143,7 +148,7 @@ export function CustomerFormDialog({ open, onClose, onSave, initialData }: Custo
             </select>
           </Field>
 
-          <Field label="Status">
+          <Field label="Status" required>
             <select
               required
               value={form.status}
@@ -162,7 +167,7 @@ export function CustomerFormDialog({ open, onClose, onSave, initialData }: Custo
           </Field>
         </div>
 
-        <Field label="Address">
+        <Field label="Address" required>
           <textarea
             required
             value={form.address}
@@ -172,17 +177,98 @@ export function CustomerFormDialog({ open, onClose, onSave, initialData }: Custo
           />
         </Field>
 
+        {/* Additional Fields */}
+        <div className="rounded-lg border border-gray-200 p-4">
+          <h3 className="mb-4 text-sm font-semibold text-gray-900">Additional Fields</h3>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <Field label="Is GTA (Goods Transport Agent)?" required>
+              <select
+                required
+                value={form.isGta}
+                onChange={(e) => update("isGta", e.target.value as Customer["isGta"])}
+                className={inputClass}
+              >
+                <option value="" disabled>
+                  Please Select
+                </option>
+                <option value="Yes">Yes</option>
+                <option value="No">No</option>
+              </select>
+            </Field>
+
+            <Field label="Applicable for E-Invoice?" required>
+              <select
+                required
+                value={form.applicableForEInvoice}
+                onChange={(e) => update("applicableForEInvoice", e.target.value as Customer["applicableForEInvoice"])}
+                className={inputClass}
+              >
+                <option value="" disabled>
+                  Please Select
+                </option>
+                <option value="Yes">Yes</option>
+                <option value="No">No</option>
+              </select>
+            </Field>
+
+            <Field label="TDS Exemption Applicable?" required>
+              <select
+                required
+                value={form.tdsExemptionApplicable}
+                onChange={(e) => update("tdsExemptionApplicable", e.target.value as Customer["tdsExemptionApplicable"])}
+                className={inputClass}
+              >
+                <option value="" disabled>
+                  Please Select
+                </option>
+                <option value="Yes">Yes</option>
+                <option value="No">No</option>
+              </select>
+            </Field>
+
+            <Field label="MSME Declaration Submitted?" required>
+              <select
+                required
+                value={form.msmeDeclarationSubmitted}
+                onChange={(e) => update("msmeDeclarationSubmitted", e.target.value as Customer["msmeDeclarationSubmitted"])}
+                className={inputClass}
+              >
+                <option value="" disabled>
+                  Please Select
+                </option>
+                <option value="Yes">Yes</option>
+                <option value="No">No</option>
+              </select>
+            </Field>
+
+            <Field label="GST Exempted Customer?" required>
+              <select
+                required
+                value={form.gstExemptedCustomer}
+                onChange={(e) => update("gstExemptedCustomer", e.target.value as Customer["gstExemptedCustomer"])}
+                className={inputClass}
+              >
+                <option value="" disabled>
+                  Please Select
+                </option>
+                <option value="Yes">Yes</option>
+                <option value="No">No</option>
+              </select>
+            </Field>
+          </div>
+        </div>
+
         <div className="mt-2 flex justify-end gap-3">
           <button
             type="button"
             onClick={onClose}
-            className="rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+            className="btn-interactive rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-700 transition-all duration-200 hover:bg-gray-50 active:scale-95"
           >
             Cancel
           </button>
           <button
             type="submit"
-            className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+            className="btn-interactive rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-all duration-200 hover:bg-blue-700 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {initialData ? "Save Changes" : "Add Customer"}
           </button>

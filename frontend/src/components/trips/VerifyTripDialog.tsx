@@ -68,7 +68,18 @@ export function VerifyTripDialog({
           <Divider />
           <Row label="Trip ID" value={trip.tripId} />
           <Row label="Booking Reference" value={trip.bookingReferenceNo} />
-          <Row label="Container Reference" value={trip.cargoContainerReference} />
+          <Row
+            label="Container Reference"
+            value={
+              trip.containerSpecification === "2 X 20 FEET CONTAINERS"
+                ? `${trip.containerNumber1} / ${trip.containerNumber2}`
+                : trip.containerSpecification === "20 FT CONTAINER" || trip.containerSpecification === "40 FT CONTAINER"
+                ? trip.containerNumber
+                : trip.containerSpecification === "OPEN LOAD CARGO"
+                ? trip.cargoReference
+                : ""
+            }
+          />
           <Row label="Origin → Destination" value={`${trip.origin} → ${trip.destination}`} />
           <Row label="Cargo Classification" value={trip.cargoClassification} />
           <Row label="Container Specification" value={trip.containerSpecification} />

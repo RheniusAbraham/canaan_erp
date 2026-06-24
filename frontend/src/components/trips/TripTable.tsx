@@ -1,6 +1,6 @@
 "use client";
 
-import { Trash2 } from "lucide-react";
+import { Edit2, Trash2 } from "lucide-react";
 import type { Trip } from "@/types/trip";
 import type { Driver } from "@/types/driver";
 import type { Truck } from "@/types/truck";
@@ -11,27 +11,20 @@ type TripTableProps = {
   drivers: Driver[];
   trucks: Truck[];
   customers: Customer[];
+  onEdit?: (trip: Trip) => void;
+  onMarkStarted?: (id: string) => void;
+  onMarkCompleted?: (id: string) => void;
   onCancel?: (id: string) => void;
   onCloseTrip?: (trip: Trip) => void;
   closedTripIds?: Set<string>;
+  emptyStateMessage?: string;
 };
 
-const statusStyles: Record<Trip["status"], string> = {
-  Assigned: "bg-amber-50 text-amber-700",
-  Started: "bg-sky-50 text-sky-700",
-  Loaded: "bg-indigo-50 text-indigo-700",
-  "On-Transit": "bg-purple-50 text-purple-700",
-  Reached: "bg-cyan-50 text-cyan-700",
-  Unloaded: "bg-teal-50 text-teal-700",
-  Completed: "bg-emerald-50 text-emerald-700",
-  Cancelled: "bg-gray-100 text-gray-500",
-};
-
-export function TripTable({ trips, drivers, trucks, customers, onCancel, onCloseTrip, closedTripIds }: TripTableProps) {
+export function TripTable({ trips, drivers, trucks, customers, onEdit, onMarkStarted, onMarkCompleted, onCancel, onCloseTrip, closedTripIds, emptyStateMessage }: TripTableProps) {
   if (trips.length === 0) {
     return (
       <div className="rounded-xl border border-gray-200 bg-white p-10 text-center text-sm text-gray-500">
-        No trips assigned yet. Click &ldquo;Assign Trip&rdquo; to create one.
+        {emptyStateMessage || "No trips found."}
       </div>
     );
   }
@@ -52,10 +45,10 @@ export function TripTable({ trips, drivers, trucks, customers, onCancel, onClose
               "Route",
               "Cargo / Container Ref",
               "Scheduled Date",
+              "Assigned Date",
               "Driver",
               "Vehicle",
-              "Status",
-              ...(onCancel || onCloseTrip ? ["Actions"] : []),
+              ...(onEdit || onCancel || onCloseTrip ? ["Actions"] : []),
             ].map(
               (column) => (
                 <th key={column} className="px-4 py-3 text-xs font-semibold tracking-wider text-gray-500 uppercase">
@@ -79,42 +72,76 @@ export function TripTable({ trips, drivers, trucks, customers, onCancel, onClose
                 <td className="px-4 py-3 text-gray-600">
                   {trip.origin} <span className="text-gray-400">→</span> {trip.destination}
                 </td>
-                <td className="px-4 py-3 text-gray-600">{trip.cargoContainerReference}</td>
+                <td className="px-4 py-3 text-gray-600">
+                  {trip.containerSpecification === "2 X 20 FEET CONTAINERS"
+                    ? `${trip.containerNumber1} / ${trip.containerNumber2}`
+                    : trip.containerSpecification === "20 FT CONTAINER" || trip.containerSpecification === "40 FT CONTAINER"
+                    ? trip.containerNumber
+                    : trip.containerSpecification === "OPEN LOAD CARGO"
+                    ? trip.cargoReference
+                    : "—"}
+                </td>
                 <td className="px-4 py-3 text-gray-600">{trip.scheduledDate}</td>
+                <td className="px-4 py-3 text-gray-600">{trip.assignedDate}</td>
                 <td className="px-4 py-3 text-gray-600">{driver?.name ?? "—"}</td>
                 <td className="px-4 py-3 text-gray-600">{truck?.registrationNumber ?? "—"}</td>
-                <td className="px-4 py-3">
-                  <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium ${statusStyles[trip.status]}`}>
-                    {trip.status}
-                  </span>
-                </td>
-                {(onCancel || onCloseTrip) && (
+                {(onEdit || onCancel || onCloseTrip) && (
                   <td className="px-4 py-3">
-                    {onCancel && trip.status !== "Cancelled" && trip.status !== "Completed" && (
-                      <button
-                        type="button"
-                        onClick={() => onCancel(trip.id)}
-                        aria-label={`Cancel ${trip.tripId}`}
-                        className="rounded-md p-1.5 text-gray-500 hover:bg-red-50 hover:text-red-600"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </button>
-                    )}
-                    {onCloseTrip && trip.status === "Completed" && (
-                      closedTripIds?.has(trip.id) ? (
-                        <span className="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-1 text-xs font-medium text-gray-500">
-                          Closed
-                        </span>
-                      ) : (
+                    <div className="flex items-center gap-2">
+                      {onEdit && trip.status !== "Cancelled" && trip.status !== "Completed" && (
                         <button
                           type="button"
-                          onClick={() => onCloseTrip(trip)}
+                          onClick={() => onEdit(trip)}
+                          aria-label={`Edit ${trip.tripId}`}
+                          className="transition-all duration-300 rounded-md p-1.5 text-gray-500 hover:bg-blue-50 hover:text-blue-600"
+                        >
+                          <Edit2 className="h-4 w-4" />
+                        </button>
+                      )}
+                      {onMarkStarted && trip.status === "Assigned" && (
+                        <button
+                          type="button"
+                          onClick={() => onMarkStarted(trip.id)}
+                          className="rounded-lg bg-amber-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-amber-700"
+                        >
+                          Mark as Started
+                        </button>
+                      )}
+                      {onMarkCompleted && trip.status === "Started" && (
+                        <button
+                          type="button"
+                          onClick={() => onMarkCompleted(trip.id)}
                           className="rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-emerald-700"
                         >
-                          CLOSE TRIP
+                          Mark as Completed
                         </button>
-                      )
-                    )}
+                      )}
+                      {onCancel && trip.status !== "Cancelled" && trip.status !== "Completed" && (
+                        <button
+                          type="button"
+                          onClick={() => onCancel(trip.id)}
+                          aria-label={`Cancel ${trip.tripId}`}
+                          className="transition-all duration-300 rounded-md p-1.5 text-gray-500 hover:bg-red-50 hover:text-red-600"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      )}
+                      {onCloseTrip && trip.status === "Completed" && (
+                        closedTripIds?.has(trip.id) ? (
+                          <span className="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-1 text-xs font-medium text-gray-500">
+                            Closed
+                          </span>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => onCloseTrip(trip)}
+                            className="rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-emerald-700"
+                          >
+                            CLOSE TRIP
+                          </button>
+                        )
+                      )}
+                    </div>
                   </td>
                 )}
               </tr>

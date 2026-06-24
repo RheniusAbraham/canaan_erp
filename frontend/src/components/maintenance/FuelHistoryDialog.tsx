@@ -17,14 +17,7 @@ export function FuelHistoryDialog({ open, truck, logs, onClose }: FuelHistoryDia
   const fmt = (n: number) =>
     `₹${n.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
-  // Compute mileage between consecutive fill-ups
   const sorted = [...logs].sort((a, b) => a.odometer - b.odometer);
-  const mileageMap = new Map<string, number | null>();
-  for (let i = 1; i < sorted.length; i++) {
-    const distKm = sorted[i].odometer - sorted[i - 1].odometer;
-    const kmpl = distKm / sorted[i].litres;
-    mileageMap.set(sorted[i].id, kmpl);
-  }
 
   const totalLitres = logs.reduce((s, l) => s + l.litres, 0);
   const totalCost = logs.reduce((s, l) => s + l.totalCost, 0);
@@ -62,7 +55,7 @@ export function FuelHistoryDialog({ open, truck, logs, onClose }: FuelHistoryDia
             <table className="w-full text-left text-sm">
               <thead>
                 <tr className="border-b border-gray-200 bg-gray-50">
-                  {["Date", "Odometer (km)", "Litres", "Price/L", "Total Cost", "Fuel Station", "Logged By", "Mileage"].map((h) => (
+                  {["Date", "Odometer (km)", "Litres", "Price/L", "Total Cost", "Fuel Station", "Logged By"].map((h) => (
                     <th key={h} className="px-3 py-2.5 text-xs font-semibold uppercase tracking-wider text-gray-500 whitespace-nowrap">
                       {h}
                     </th>
@@ -71,7 +64,6 @@ export function FuelHistoryDialog({ open, truck, logs, onClose }: FuelHistoryDia
               </thead>
               <tbody className="divide-y divide-gray-100">
                 {[...logs].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).map((log) => {
-                  const mileage = mileageMap.get(log.id);
                   return (
                     <tr key={log.id} className="hover:bg-gray-50">
                       <td className="px-3 py-2.5 text-gray-700 whitespace-nowrap">{log.date}</td>
@@ -81,13 +73,6 @@ export function FuelHistoryDialog({ open, truck, logs, onClose }: FuelHistoryDia
                       <td className="px-3 py-2.5 font-medium text-gray-800">{fmt(log.totalCost)}</td>
                       <td className="px-3 py-2.5 text-gray-600">{log.fuelStation}</td>
                       <td className="px-3 py-2.5 text-gray-600">{log.loggedBy}</td>
-                      <td className="px-3 py-2.5">
-                        {mileage != null ? (
-                          <span className="font-medium text-blue-700">{mileage.toFixed(2)} km/L</span>
-                        ) : (
-                          <span className="text-gray-400 text-xs">—</span>
-                        )}
-                      </td>
                     </tr>
                   );
                 })}

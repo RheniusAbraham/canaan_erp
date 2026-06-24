@@ -1,37 +1,65 @@
 "use client";
 
 import { Search } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { StaffAttendanceTable } from "@/components/attendance/StaffAttendanceTable";
-import { initialStaffAttendance, getStaffAttendanceForDate } from "@/lib/attendance-data";
-import { initialStaff } from "@/lib/staff-data";
+import { staffApi, attendanceApi } from "@/lib/api";
+import type { Staff } from "@/types/staff";
+import type { StaffAttendanceRecord } from "@/types/attendance";
 
 function todayIso(): string {
   return new Date().toISOString().slice(0, 10);
 }
 
+function getStaffAttendanceForDate(
+  records: StaffAttendanceRecord[],
+  staffId: string,
+  date: string
+): StaffAttendanceRecord | undefined {
+  return records.find((r) => r.staffId === staffId && r.date === date);
+}
+
 export default function StaffAttendancePage() {
   const [date, setDate] = useState(todayIso());
   const [search, setSearch] = useState("");
+  const [staff, setStaff] = useState<Staff[]>([]);
+  const [records, setRecords] = useState<StaffAttendanceRecord[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    Promise.all([staffApi.list(), attendanceApi.listStaff()])
+      .then(([s, r]) => {
+        setStaff(s);
+        setRecords(r);
+      })
+      .finally(() => setLoading(false));
+  }, []);
+
+  // Reload records when date changes
+  useEffect(() => {
+    attendanceApi.listStaff(date).then(setRecords);
+  }, [date]);
 
   const summary = useMemo(() => {
     const counts = { Present: 0, Absent: 0, "On Leave": 0, "Not Marked": 0 };
-    for (const member of initialStaff) {
-      const record = getStaffAttendanceForDate(initialStaffAttendance, member.id, date);
+    for (const member of staff) {
+      const record = getStaffAttendanceForDate(records, member.id, date);
       const status = record?.status ?? "Not Marked";
-      counts[status] += 1;
+      counts[status as keyof typeof counts] += 1;
     }
     return counts;
-  }, [date]);
+  }, [staff, records, date]);
 
   const filteredStaff = useMemo(() => {
     const query = search.trim().toLowerCase();
-    if (!query) return initialStaff;
-    return initialStaff.filter((member) => member.name.toLowerCase().includes(query));
-  }, [search]);
+    if (!query) return staff;
+    return staff.filter((member) => member.name.toLowerCase().includes(query));
+  }, [staff, search]);
+
+  if (loading) return <div className="p-6 text-sm text-gray-500">Loading...</div>;
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="animate-stagger flex flex-col gap-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Staff Attendance</h1>
@@ -83,7 +111,7 @@ export default function StaffAttendancePage() {
         />
       </div>
 
-      <StaffAttendanceTable staff={filteredStaff} records={initialStaffAttendance} date={date} />
+      <StaffAttendanceTable staff={filteredStaff} records={records} date={date} />
     </div>
   );
 }

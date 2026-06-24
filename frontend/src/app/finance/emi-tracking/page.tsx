@@ -1,10 +1,10 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Plus } from "lucide-react";
 import { EmiTrackingTable } from "@/components/finance/EmiTrackingTable";
 import { EmiFormDialog } from "@/components/finance/EmiFormDialog";
-import { initialEmiRecords } from "@/lib/finance-data";
+import { financeApi } from "@/lib/api";
 import type { EmiRecord } from "@/types/finance";
 
 function formatCurrency(amount: number): string {
@@ -20,9 +20,14 @@ function todayIso(): string {
 }
 
 export default function EmiTrackingPage() {
-  const [records, setRecords] = useState<EmiRecord[]>(initialEmiRecords);
+  const [records, setRecords] = useState<EmiRecord[]>([]);
+  const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingRecord, setEditingRecord] = useState<EmiRecord | null>(null);
+
+  useEffect(() => {
+    financeApi.listEmi().then(setRecords).finally(() => setLoading(false));
+  }, []);
 
   const summary = useMemo(() => {
     const today = todayIso();
@@ -50,24 +55,28 @@ export default function EmiTrackingPage() {
     setDialogOpen(true);
   }
 
-  function handleDelete(id: string) {
+  async function handleDelete(id: string) {
     if (!confirm("Delete this EMI entry?")) return;
+    await financeApi.deleteEmi(id);
     setRecords((prev) => prev.filter((record) => record.id !== id));
   }
 
-  function handleSave(record: EmiRecord) {
-    setRecords((prev) => {
-      const exists = prev.some((existing) => existing.id === record.id);
-      if (exists) {
-        return prev.map((existing) => (existing.id === record.id ? record : existing));
-      }
-      return [...prev, record];
-    });
+  async function handleSave(record: EmiRecord) {
+    const exists = records.some((existing) => existing.id === record.id);
+    if (exists) {
+      const updated = await financeApi.updateEmi(record.id, record);
+      setRecords((prev) => prev.map((existing) => (existing.id === record.id ? updated : existing)));
+    } else {
+      const created = await financeApi.createEmi(record);
+      setRecords((prev) => [...prev, created]);
+    }
     setDialogOpen(false);
   }
 
+  if (loading) return <div className="p-6 text-sm text-gray-500">Loading...</div>;
+
   return (
-    <div className="flex flex-col gap-6">
+    <div className="animate-stagger flex flex-col gap-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">EMI Tracking</h1>

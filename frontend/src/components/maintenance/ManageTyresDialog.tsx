@@ -8,13 +8,11 @@ import { cn } from "@/lib/utils";
 import { getTyreLayout, getTyrePositions } from "@/lib/tyre-layouts";
 import { initialTrucks } from "@/lib/truck-data";
 import {
-  RETREAD_HEALTH_THRESHOLD,
   getAvailableTyres,
   getFitmentForPosition,
-  getTyreHealth,
-  getTyreMileage,
 } from "@/lib/tyre-fitment-data";
 import { useTyreInventory } from "@/context/TyreInventoryContext";
+import { tyreApi } from "@/lib/api";
 import type { Truck } from "@/types/truck";
 
 type ManageTyresDialogProps = {
@@ -25,11 +23,7 @@ type ManageTyresDialogProps = {
 
 type ActiveAction = { position: string; type: "attach" | "remove" } | null;
 
-function healthColor(health: number): string {
-  if (health >= 70) return "bg-green-500";
-  if (health >= RETREAD_HEALTH_THRESHOLD) return "bg-yellow-500";
-  return "bg-red-500";
-}
+
 
 export function ManageTyresDialog({ open, onClose, truck }: ManageTyresDialogProps) {
   const { tyres, fitmentRecords, setFitmentRecords } = useTyreInventory();
@@ -65,7 +59,7 @@ export function ManageTyresDialog({ open, onClose, truck }: ManageTyresDialogPro
     setError("");
   }
 
-  function confirmAttach(position: string) {
+  async function confirmAttach(position: string) {
     if (!truck) return;
     if (!selectedTyreId) {
       setError("Select a tyre to attach.");
@@ -77,23 +71,17 @@ export function ManageTyresDialog({ open, onClose, truck }: ManageTyresDialogPro
       return;
     }
 
-    setFitmentRecords((prev) => [
-      ...prev,
-      {
-        id: crypto.randomUUID(),
-        tyreId: selectedTyreId,
-        truckId: truck.id,
-        position,
-        fittedOdometer: odometer,
-        fittedDate: new Date().toISOString().slice(0, 10),
-        removedOdometer: null,
-        removedDate: null,
-      },
-    ]);
-    setActiveAction(null);
+    try {
+      const fittedDate = new Date().toISOString().slice(0, 10);
+      const newFitment = await tyreApi.fitTyre(selectedTyreId, truck.id, position, odometer, fittedDate);
+      setFitmentRecords((prev) => [...prev, newFitment]);
+      setActiveAction(null);
+    } catch (err: any) {
+      setError(err.message || "Failed to attach tyre.");
+    }
   }
 
-  function confirmRemove(position: string) {
+  async function confirmRemove(position: string) {
     if (!truck) return;
     const fitment = getFitmentForPosition(truck.id, position, fitmentRecords);
     if (!fitment) return;
@@ -104,14 +92,18 @@ export function ManageTyresDialog({ open, onClose, truck }: ManageTyresDialogPro
       return;
     }
 
-    setFitmentRecords((prev) =>
-      prev.map((record) =>
-        record.id === fitment.id
-          ? { ...record, removedOdometer: odometer, removedDate: new Date().toISOString().slice(0, 10) }
-          : record
-      )
-    );
-    setActiveAction(null);
+    try {
+      const removedDate = new Date().toISOString().slice(0, 10);
+      const updatedFitment = await tyreApi.removeTyre(fitment.id, odometer, removedDate);
+      setFitmentRecords((prev) =>
+        prev.map((record) =>
+          record.id === fitment.id ? updatedFitment : record
+        )
+      );
+      setActiveAction(null);
+    } catch (err: any) {
+      setError(err.message || "Failed to remove tyre.");
+    }
   }
 
   return (
@@ -128,8 +120,6 @@ export function ManageTyresDialog({ open, onClose, truck }: ManageTyresDialogPro
             {positions.map((position) => {
               const fitment = getFitmentForPosition(truck.id, position, fitmentRecords);
               const tyre = fitment ? tyres.find((t) => t.id === fitment.tyreId) ?? null : null;
-              const mileage = tyre ? getTyreMileage(tyre.id, fitmentRecords, initialTrucks) : 0;
-              const health = tyre ? getTyreHealth(tyre, mileage) : 0;
               const isActive = activeAction?.position === position;
 
               return (
@@ -163,12 +153,7 @@ export function ManageTyresDialog({ open, onClose, truck }: ManageTyresDialogPro
                       <span>
                         Fitted at {fitment.fittedOdometer.toLocaleString()} km on {fitment.fittedDate}
                       </span>
-                      <div className="mt-1 flex items-center gap-2">
-                        <div className="h-2 w-24 overflow-hidden rounded-full bg-gray-100">
-                          <div className={cn("h-full rounded-full", healthColor(health))} style={{ width: `${health}%` }} />
-                        </div>
-                        <span>Tyre Health: {health}%</span>
-                      </div>
+
                     </div>
                   ) : (
                     <p className="mt-1 text-xs text-gray-500">Empty</p>

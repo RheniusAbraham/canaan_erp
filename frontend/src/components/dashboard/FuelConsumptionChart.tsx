@@ -12,9 +12,9 @@ import {
 } from "recharts";
 
 const data = [
-  { name: "Week 1", Litres: 2200, Mileage: 0 },
-  { name: "Week 2", Litres: 2050, Mileage: 0 },
-  { name: "Week 3", Litres: 2300, Mileage: 0 },
+  { name: "Week 1", Litres: 2200 },
+  { name: "Week 2", Litres: 2050 },
+  { name: "Week 3", Litres: 2300 },
 ];
 
 export function FuelConsumptionChart() {
@@ -42,7 +42,6 @@ export function FuelConsumptionChart() {
           formatter={(value) => <span className="text-sm text-gray-600">{value}</span>}
         />
         <Bar dataKey="Litres" fill="#3b82f6" radius={[4, 4, 0, 0]} />
-        <Bar dataKey="Mileage" fill="#22c55e" radius={[4, 4, 0, 0]} />
       </BarChart>
     </ResponsiveContainer>
   );

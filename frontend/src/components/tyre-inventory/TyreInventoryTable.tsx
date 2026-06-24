@@ -2,19 +2,13 @@
 
 import { Pencil, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { initialTrucks } from "@/lib/truck-data";
-import { RETREAD_HEALTH_THRESHOLD, getTyreHealth, getTyreMileage } from "@/lib/tyre-fitment-data";
-import type { TyreFitmentRecord } from "@/types/tyre-fitment";
 import type { TyreInventoryItem } from "@/types/tyre-inventory";
 
 type TyreInventoryTableProps = {
   tyres: TyreInventoryItem[];
-  fitmentRecords: TyreFitmentRecord[];
   onEdit: (tyre: TyreInventoryItem) => void;
   onDelete: (id: string) => void;
   onViewHistory: (tyre: TyreInventoryItem) => void;
-  onFlagForRetreading: (tyre: TyreInventoryItem) => void;
-  onViewReport: (tyre: TyreInventoryItem) => void;
 };
 
 const columns = [
@@ -24,13 +18,8 @@ const columns = [
   "Tyre Number",
   "Tyre Size",
   "Range (km)",
-  "Mileage (km)",
-  "Tyre Health",
   "Cost",
   "Status",
-  "",
-  "",
-  "",
   "Actions",
 ];
 
@@ -39,20 +28,11 @@ const conditionStyles: Record<string, string> = {
   Rethreaded: "bg-yellow-50 text-yellow-700",
 };
 
-function healthColor(health: number): string {
-  if (health >= 70) return "bg-green-500";
-  if (health >= RETREAD_HEALTH_THRESHOLD) return "bg-yellow-500";
-  return "bg-red-500";
-}
-
 export function TyreInventoryTable({
   tyres,
-  fitmentRecords,
   onEdit,
   onDelete,
   onViewHistory,
-  onFlagForRetreading,
-  onViewReport,
 }: TyreInventoryTableProps) {
   if (tyres.length === 0) {
     return (
@@ -79,10 +59,6 @@ export function TyreInventoryTable({
         </thead>
         <tbody className="divide-y divide-gray-100">
           {tyres.map((tyre) => {
-            const mileage = getTyreMileage(tyre.id, fitmentRecords, initialTrucks);
-            const health = getTyreHealth(tyre, mileage);
-            const eligibleForRetreading = health < RETREAD_HEALTH_THRESHOLD;
-
             return (
               <tr key={tyre.id} className="hover:bg-gray-50">
                 <td className="px-4 py-3 font-medium text-gray-900">{tyre.brand}</td>
@@ -91,15 +67,6 @@ export function TyreInventoryTable({
                 <td className="px-4 py-3 text-gray-600">{tyre.tyreNumber}</td>
                 <td className="px-4 py-3 text-gray-600">{tyre.size}</td>
                 <td className="px-4 py-3 text-gray-600">{Number(tyre.range).toLocaleString()} km</td>
-                <td className="px-4 py-3 text-gray-600">{mileage.toLocaleString()} km</td>
-                <td className="px-4 py-3">
-                  <div className="flex items-center gap-2">
-                    <div className="h-2 w-20 overflow-hidden rounded-full bg-gray-100">
-                      <div className={cn("h-full rounded-full", healthColor(health))} style={{ width: `${health}%` }} />
-                    </div>
-                    <span className="text-gray-600">{health}%</span>
-                  </div>
-                </td>
                 <td className="px-4 py-3 text-gray-600">₹{Number(tyre.cost).toLocaleString()}</td>
                 <td className="px-4 py-3">
                   <div className="flex flex-col items-start gap-1">
@@ -111,11 +78,6 @@ export function TyreInventoryTable({
                     >
                       {tyre.condition}
                     </span>
-                    {tyre.flaggedForRetreading && (
-                      <span className="rounded-full bg-orange-50 px-2.5 py-1 text-xs font-medium text-orange-700">
-                        Flagged for Retreading
-                      </span>
-                    )}
                   </div>
                 </td>
                 <td className="px-4 py-3">
@@ -127,37 +89,14 @@ export function TyreInventoryTable({
                     View Tyre History
                   </button>
                 </td>
-                <td className="px-4 py-3">
-                  <button
-                    type="button"
-                    onClick={() => onViewReport(tyre)}
-                    className="rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50"
-                  >
-                    View Tyre Report
-                  </button>
-                </td>
-                <td className="px-4 py-3">
-                  <button
-                    type="button"
-                    onClick={() => onFlagForRetreading(tyre)}
-                    disabled={!eligibleForRetreading || tyre.flaggedForRetreading}
-                    className={cn(
-                      "rounded-lg border px-3 py-1.5 text-xs font-medium",
-                      !eligibleForRetreading || tyre.flaggedForRetreading
-                        ? "border-gray-200 bg-gray-50 text-gray-400 cursor-not-allowed"
-                        : "border-orange-200 bg-orange-50 text-orange-700 hover:bg-orange-100"
-                    )}
-                  >
-                    {tyre.flaggedForRetreading ? "Flagged for Retreading" : "Flag for Retreading"}
-                  </button>
-                </td>
+
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-2">
                     <button
                       type="button"
                       onClick={() => onEdit(tyre)}
                       aria-label={`Edit ${tyre.tyreNumber}`}
-                      className="rounded-md p-1.5 text-gray-500 hover:bg-blue-50 hover:text-blue-600"
+                      className="transition-all duration-300 group rounded-md p-1.5 text-gray-500 hover:bg-blue-50 hover:text-blue-600"
                     >
                       <Pencil className="h-4 w-4" />
                     </button>
@@ -165,7 +104,7 @@ export function TyreInventoryTable({
                       type="button"
                       onClick={() => onDelete(tyre.id)}
                       aria-label={`Delete ${tyre.tyreNumber}`}
-                      className="rounded-md p-1.5 text-gray-500 hover:bg-red-50 hover:text-red-600"
+                      className="transition-all duration-300 group rounded-md p-1.5 text-gray-500 hover:bg-red-50 hover:text-red-600"
                     >
                       <Trash2 className="h-4 w-4" />
                     </button>

@@ -18,7 +18,6 @@ import {
   Repeat,
   Wallet,
   Banknote,
-  Gauge,
   type LucideIcon,
 } from "lucide-react";
 
@@ -74,7 +73,6 @@ export const sidebarSections: NavSection[] = [
       { label: "Truck Maintenance", href: "/maintenance/trucks", icon: Wrench },
       { label: "Tyre Management", href: "/maintenance/tyre-management", icon: CircleDot },
       { label: "Tyre Inventory", href: "/maintenance/tyre-inventory", icon: Boxes },
-      { label: "Mileage History", href: "/maintenance/mileage-history", icon: Gauge },
       { label: "Compliance & Renewals", href: "/maintenance/compliance", icon: ShieldCheck },
     ],
   },
@@ -87,10 +85,7 @@ export const sidebarSections: NavSection[] = [
       { label: "Recurring Payments", href: "/finance/recurring-payments", icon: Repeat },
     ],
   },
-  {
-    title: "Performance Insights",
-    items: [{ label: "Mileage Insights", href: "/performance/mileage-insights", icon: Gauge }],
-  },
+
 ];
 
 export type TopNavItem = {
@@ -101,8 +96,9 @@ export type TopNavItem = {
 
 export const topNavItems: TopNavItem[] = [
   { label: "Overview", href: "/", hasDropdown: false },
-  { label: "Operations", href: "/operations", hasDropdown: true },
-  { label: "Fleet Manager", href: "/fleet", hasDropdown: true },
-  { label: "Attendance", href: "/attendance", hasDropdown: true },
-  { label: "System", href: "/system", hasDropdown: true },
+  { label: "Current Trips", href: "/trips/current", hasDropdown: false },
+  { label: "Assign Trip", href: "/trips/assign", hasDropdown: false },
+  { label: "Truck Maintenance", href: "/maintenance/trucks", hasDropdown: false },
+  { label: "Tyre Management", href: "/maintenance/tyre-management", hasDropdown: false },
+  { label: "Driver Attendance", href: "/attendance/drivers", hasDropdown: false },
 ];

@@ -23,7 +23,6 @@ const emptyForm: Omit<TyreInventoryItem, "id"> = {
   range: "",
   cost: "",
   condition: "",
-  flaggedForRetreading: false,
   purchaseDate: "",
   repairCost: "0",
   retreadCost: "0",
@@ -78,7 +77,7 @@ export function TyreInventoryFormDialog({
     <Dialog open={open} onClose={onClose} title={initialData ? "Edit Tyre" : "Add Tyre"}>
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <Field label="Brand">
+          <Field label="Brand" required>
             <input
               type="text"
               required
@@ -95,7 +94,7 @@ export function TyreInventoryFormDialog({
             </datalist>
           </Field>
 
-          <Field label="Tyre Pattern">
+          <Field label="Tyre Pattern" required>
             <input
               type="text"
               required
@@ -106,7 +105,7 @@ export function TyreInventoryFormDialog({
             />
           </Field>
 
-          <Field label="Tyre Type">
+          <Field label="Tyre Type" required>
             <input
               type="text"
               required
@@ -123,7 +122,7 @@ export function TyreInventoryFormDialog({
             </datalist>
           </Field>
 
-          <Field label="Tyre Number">
+          <Field label="Tyre Number" required>
             <input
               type="text"
               required
@@ -137,7 +136,7 @@ export function TyreInventoryFormDialog({
             />
           </Field>
 
-          <Field label="Tyre Size">
+          <Field label="Tyre Size" required>
             <input
               type="text"
               required
@@ -148,7 +147,7 @@ export function TyreInventoryFormDialog({
             />
           </Field>
 
-          <Field label="Range (km)">
+          <Field label="Range (km)" required>
             <input
               type="number"
               required
@@ -160,7 +159,7 @@ export function TyreInventoryFormDialog({
             />
           </Field>
 
-          <Field label="Cost">
+          <Field label="Cost" required>
             <input
               type="number"
               required
@@ -172,7 +171,7 @@ export function TyreInventoryFormDialog({
             />
           </Field>
 
-          <Field label="Status">
+          <Field label="Status" required>
             <select
               required
               value={form.condition}
@@ -190,7 +189,7 @@ export function TyreInventoryFormDialog({
             </select>
           </Field>
 
-          <Field label="Purchase Date">
+          <Field label="Purchase Date" required>
             <input
               type="date"
               value={form.purchaseDate}
@@ -199,7 +198,7 @@ export function TyreInventoryFormDialog({
             />
           </Field>
 
-          <Field label="Repair Cost">
+          <Field label="Repair Cost" required>
             <input
               type="number"
               min="0"
@@ -209,29 +208,41 @@ export function TyreInventoryFormDialog({
               placeholder="Total repair cost so far"
             />
           </Field>
-
-          <Field label="Retreading Cost">
-            <input
-              type="number"
-              min="0"
-              value={form.retreadCost}
-              onChange={(e) => update("retreadCost", e.target.value)}
-              className={inputClass}
-              placeholder="Total retreading cost so far"
-            />
-          </Field>
-
-          <Field label="Number of Retreads">
-            <input
-              type="number"
-              min="0"
-              value={form.retreadCount}
-              onChange={(e) => update("retreadCount", e.target.value)}
-              className={inputClass}
-              placeholder="e.g. 1"
-            />
-          </Field>
         </div>
+
+        {form.condition === "Rethreaded" && (
+          <div className="rounded-lg border border-yellow-200 bg-yellow-50 p-4">
+            <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-yellow-700">
+              Retreading Details — required for Rethreaded tyres
+            </p>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <Field label="Retreading Cost (₹)" required>
+                <input
+                  type="number"
+                  required
+                  min="1"
+                  value={form.retreadCost}
+                  onChange={(e) => update("retreadCost", e.target.value)}
+                  className={inputClass}
+                  placeholder="e.g. 4500"
+                />
+              </Field>
+
+              <Field label="Number of Retreads" required>
+                <input
+                  type="number"
+                  required
+                  min="1"
+                  value={form.retreadCount}
+                  onChange={(e) => update("retreadCount", e.target.value)}
+                  className={inputClass}
+                  placeholder="e.g. 1"
+                />
+              </Field>
+            </div>
+          </div>
+        )}
+
 
         {error && <p className="text-sm text-red-600">{error}</p>}
 
@@ -239,13 +250,13 @@ export function TyreInventoryFormDialog({
           <button
             type="button"
             onClick={onClose}
-            className="rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+            className="btn-interactive rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-700 transition-all duration-200 hover:bg-gray-50 active:scale-95"
           >
             Cancel
           </button>
           <button
             type="submit"
-            className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+            className="btn-interactive rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-all duration-200 hover:bg-blue-700 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {initialData ? "Save Changes" : "Add Tyre"}
           </button>

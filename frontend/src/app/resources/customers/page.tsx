@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Plus } from "lucide-react";
 import { CustomerTable } from "@/components/customers/CustomerTable";
 import { CustomerFormDialog } from "@/components/customers/CustomerFormDialog";
@@ -8,9 +8,7 @@ import { CustomerPricingTable } from "@/components/customers/CustomerPricingTabl
 import { CustomerPricingFormDialog } from "@/components/customers/CustomerPricingFormDialog";
 import { CustomerDestinationTable } from "@/components/customers/CustomerDestinationTable";
 import { CustomerDestinationFormDialog } from "@/components/customers/CustomerDestinationFormDialog";
-import { initialCustomers } from "@/lib/customer-data";
-import { initialCustomerPricing } from "@/lib/customer-pricing-data";
-import { initialCustomerDestinations } from "@/lib/customer-destination-data";
+import { customersApi } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import type { Customer } from "@/types/customer";
 import type { CustomerPricing } from "@/types/customer-pricing";
@@ -26,18 +24,37 @@ type TabId = (typeof TABS)[number]["id"];
 
 export default function CustomersPage() {
   const [activeTab, setActiveTab] = useState<TabId>("list");
+  const [loading, setLoading] = useState(true);
 
-  const [customers, setCustomers] = useState<Customer[]>(initialCustomers);
+  const [customers, setCustomers] = useState<Customer[]>([]);
   const [customerDialogOpen, setCustomerDialogOpen] = useState(false);
   const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
 
-  const [pricing, setPricing] = useState<CustomerPricing[]>(initialCustomerPricing);
+  const [pricing, setPricing] = useState<CustomerPricing[]>([]);
   const [pricingDialogOpen, setPricingDialogOpen] = useState(false);
   const [editingPricing, setEditingPricing] = useState<CustomerPricing | null>(null);
 
-  const [destinations, setDestinations] = useState<CustomerDestination[]>(initialCustomerDestinations);
+  const [destinations, setDestinations] = useState<CustomerDestination[]>([]);
   const [destinationDialogOpen, setDestinationDialogOpen] = useState(false);
   const [editingDestination, setEditingDestination] = useState<CustomerDestination | null>(null);
+
+  useEffect(() => {
+    customersApi.list().then(setCustomers).finally(() => setLoading(false));
+  }, []);
+
+  // Load pricing and destinations lazily when tab is opened
+  useEffect(() => {
+    if (activeTab === "pricing" && customers.length > 0 && pricing.length === 0) {
+      Promise.all(customers.map((c) => customersApi.listPricing(c.id))).then((results) =>
+        setPricing(results.flat())
+      );
+    }
+    if (activeTab === "destinations" && customers.length > 0 && destinations.length === 0) {
+      Promise.all(customers.map((c) => customersApi.listDestinations(c.id))).then((results) =>
+        setDestinations(results.flat())
+      );
+    }
+  }, [activeTab, customers, pricing.length, destinations.length]);
 
   function handleAddCustomer() {
     setEditingCustomer(null);
@@ -49,19 +66,21 @@ export default function CustomersPage() {
     setCustomerDialogOpen(true);
   }
 
-  function handleDeleteCustomer(id: string) {
+  async function handleDeleteCustomer(id: string) {
     if (!confirm("Delete this customer?")) return;
+    await customersApi.delete(id);
     setCustomers((prev) => prev.filter((customer) => customer.id !== id));
   }
 
-  function handleSaveCustomer(customer: Customer) {
-    setCustomers((prev) => {
-      const exists = prev.some((existing) => existing.id === customer.id);
-      if (exists) {
-        return prev.map((existing) => (existing.id === customer.id ? customer : existing));
-      }
-      return [...prev, customer];
-    });
+  async function handleSaveCustomer(customer: Customer) {
+    const exists = customers.some((existing) => existing.id === customer.id);
+    if (exists) {
+      const updated = await customersApi.update(customer.id, customer);
+      setCustomers((prev) => prev.map((existing) => (existing.id === customer.id ? updated : existing)));
+    } else {
+      const created = await customersApi.create(customer);
+      setCustomers((prev) => [...prev, created]);
+    }
     setCustomerDialogOpen(false);
   }
 
@@ -75,19 +94,23 @@ export default function CustomersPage() {
     setPricingDialogOpen(true);
   }
 
-  function handleDeletePricing(id: string) {
+  async function handleDeletePricing(id: string) {
     if (!confirm("Delete this pricing entry?")) return;
-    setPricing((prev) => prev.filter((entry) => entry.id !== id));
+    const entry = pricing.find((p) => p.id === id);
+    if (!entry) return;
+    await customersApi.deletePricing(entry.customerId, id);
+    setPricing((prev) => prev.filter((p) => p.id !== id));
   }
 
-  function handleSavePricing(entry: CustomerPricing) {
-    setPricing((prev) => {
-      const exists = prev.some((existing) => existing.id === entry.id);
-      if (exists) {
-        return prev.map((existing) => (existing.id === entry.id ? entry : existing));
-      }
-      return [...prev, entry];
-    });
+  async function handleSavePricing(entry: CustomerPricing) {
+    const exists = pricing.some((existing) => existing.id === entry.id);
+    if (exists) {
+      const updated = await customersApi.updatePricing(entry.customerId, entry.id, entry);
+      setPricing((prev) => prev.map((existing) => (existing.id === entry.id ? updated : existing)));
+    } else {
+      const created = await customersApi.createPricing(entry.customerId, entry);
+      setPricing((prev) => [...prev, created]);
+    }
     setPricingDialogOpen(false);
   }
 
@@ -101,24 +124,30 @@ export default function CustomersPage() {
     setDestinationDialogOpen(true);
   }
 
-  function handleDeleteDestination(id: string) {
+  async function handleDeleteDestination(id: string) {
     if (!confirm("Delete this destination?")) return;
-    setDestinations((prev) => prev.filter((entry) => entry.id !== id));
+    const entry = destinations.find((d) => d.id === id);
+    if (!entry) return;
+    await customersApi.deleteDestination(entry.customerId, id);
+    setDestinations((prev) => prev.filter((d) => d.id !== id));
   }
 
-  function handleSaveDestination(entry: CustomerDestination) {
-    setDestinations((prev) => {
-      const exists = prev.some((existing) => existing.id === entry.id);
-      if (exists) {
-        return prev.map((existing) => (existing.id === entry.id ? entry : existing));
-      }
-      return [...prev, entry];
-    });
+  async function handleSaveDestination(entry: CustomerDestination) {
+    const exists = destinations.some((existing) => existing.id === entry.id);
+    if (exists) {
+      const updated = await customersApi.updateDestination(entry.customerId, entry.id, entry);
+      setDestinations((prev) => prev.map((existing) => (existing.id === entry.id ? updated : existing)));
+    } else {
+      const created = await customersApi.createDestination(entry.customerId, entry);
+      setDestinations((prev) => [...prev, created]);
+    }
     setDestinationDialogOpen(false);
   }
 
+  if (loading) return <div className="p-6 text-sm text-gray-500">Loading...</div>;
+
   return (
-    <div className="flex flex-col gap-6">
+    <div className="animate-stagger flex flex-col gap-6">
       <div>
         <h1 className="text-2xl font-bold text-gray-900">Our Customers</h1>
         <p className="mt-1 text-sm text-gray-500">Manage customer records, pricing, and destinations</p>
@@ -143,7 +172,7 @@ export default function CustomersPage() {
       </div>
 
       {activeTab === "list" && (
-        <div className="flex flex-col gap-6">
+        <div className="animate-stagger flex flex-col gap-6">
           <div className="flex items-center justify-end">
             <button
               type="button"
@@ -167,7 +196,7 @@ export default function CustomersPage() {
       )}
 
       {activeTab === "pricing" && (
-        <div className="flex flex-col gap-6">
+        <div className="animate-stagger flex flex-col gap-6">
           <div className="flex items-center justify-end">
             <button
               type="button"
@@ -198,7 +227,7 @@ export default function CustomersPage() {
       )}
 
       {activeTab === "destinations" && (
-        <div className="flex flex-col gap-6">
+        <div className="animate-stagger flex flex-col gap-6">
           <div className="flex items-center justify-end">
             <button
               type="button"

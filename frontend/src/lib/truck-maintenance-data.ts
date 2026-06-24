@@ -3,7 +3,6 @@ import type {
   MaintenanceRecord,
   MaintenanceScheduleGroup,
   MaintenanceStatusItem,
-  TruckHealth,
   TruckMaintenanceSummary,
 } from "@/types/truck-maintenance";
 
@@ -108,57 +107,14 @@ export function getMaintenanceStatus(truck: Truck, records: MaintenanceRecord[])
   return result.sort((a, b) => a.remainingKm - b.remainingKm);
 }
 
-const HEALTH_TIERS: { minScore: number; health: TruckHealth }[] = [
-  { minScore: 85, health: "Excellent" },
-  { minScore: 70, health: "Good" },
-  { minScore: 50, health: "Fair" },
-  { minScore: 30, health: "Poor" },
-  { minScore: 0, health: "Critical" },
-];
 
-function healthFromScore(score: number): TruckHealth {
-  return HEALTH_TIERS.find((tier) => score >= tier.minScore)?.health ?? "Critical";
-}
 
 export function getTruckMaintenanceSummary(truck: Truck, records: MaintenanceRecord[]): TruckMaintenanceSummary {
   const status = getMaintenanceStatus(truck, records);
   const attentionCount = status.filter((entry) => entry.status === "attention").length;
   const upcomingCount = status.filter((entry) => entry.status === "upcoming").length;
 
-  let score = 100;
-
-  // Every overdue mandatory check is a serious reliability hit.
-  score -= Math.min(attentionCount * 8, 60);
-
-  // Checks coming due soon weigh in lightly.
-  score -= Math.min(upcomingCount * 3, 15);
-
-  // If a check keeps getting redone before its scheduled interval elapses, the
-  // truck is breaking down faster than expected — penalize proportionally to
-  // how much earlier than scheduled the repeat work was needed.
-  const truckRecords = records.filter((record) => record.truckId === truck.id);
-  for (const group of MAINTENANCE_SCHEDULE) {
-    for (const item of group.items) {
-      const odometers = truckRecords
-        .filter((record) => record.maintenanceType === item)
-        .map((record) => Number(record.odometer))
-        .sort((a, b) => a - b);
-
-      for (let i = 1; i < odometers.length; i++) {
-        const gap = odometers[i] - odometers[i - 1];
-        if (gap > 0 && gap < group.intervalKm) {
-          const shortfallRatio = (group.intervalKm - gap) / group.intervalKm;
-          score -= shortfallRatio * 10;
-        }
-      }
-    }
-  }
-
-  score = Math.max(0, Math.min(100, Math.round(score)));
-
   return {
     truckId: truck.id,
-    health: healthFromScore(score),
-    reliabilityScore: score,
   };
 }

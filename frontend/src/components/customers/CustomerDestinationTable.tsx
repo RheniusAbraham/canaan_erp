@@ -69,7 +69,7 @@ export function CustomerDestinationTable({ destinations, customers, onEdit, onDe
                       type="button"
                       onClick={() => onEdit(entry)}
                       aria-label={`Edit destination for ${customer?.name ?? "customer"}`}
-                      className="rounded-md p-1.5 text-gray-500 hover:bg-blue-50 hover:text-blue-600"
+                      className="transition-all duration-300 group rounded-md p-1.5 text-gray-500 hover:bg-blue-50 hover:text-blue-600"
                     >
                       <Pencil className="h-4 w-4" />
                     </button>
@@ -77,7 +77,7 @@ export function CustomerDestinationTable({ destinations, customers, onEdit, onDe
                       type="button"
                       onClick={() => onDelete(entry.id)}
                       aria-label={`Delete destination for ${customer?.name ?? "customer"}`}
-                      className="rounded-md p-1.5 text-gray-500 hover:bg-red-50 hover:text-red-600"
+                      className="transition-all duration-300 group rounded-md p-1.5 text-gray-500 hover:bg-red-50 hover:text-red-600"
                     >
                       <Trash2 className="h-4 w-4" />
                     </button>

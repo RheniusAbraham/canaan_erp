@@ -27,7 +27,6 @@ export const initialTyreInventory: TyreInventoryItem[] = [
     range: "80000",
     cost: "18500",
     condition: "New",
-    flaggedForRetreading: false,
     purchaseDate: "",
     repairCost: "0",
     retreadCost: "0",

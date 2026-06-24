@@ -1,14 +1,22 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ComplianceTable } from "@/components/fleet/ComplianceTable";
 import { getComplianceStatus } from "@/lib/compliance";
-import { initialTrucks } from "@/lib/truck-data";
+import { trucksApi } from "@/lib/api";
+import type { Truck } from "@/types/truck";
 
 export default function CompliancePage() {
+  const [trucks, setTrucks] = useState<Truck[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    trucksApi.list().then(setTrucks).finally(() => setLoading(false));
+  }, []);
+
   const summary = useMemo(() => {
     const counts = { Valid: 0, "Expiring Soon": 0, Expired: 0 };
-    for (const truck of initialTrucks) {
+    for (const truck of trucks) {
       const dates = [
         truck.fcExpiryDate,
         truck.roadTaxDate,
@@ -20,10 +28,12 @@ export default function CompliancePage() {
       }
     }
     return counts;
-  }, []);
+  }, [trucks]);
+
+  if (loading) return <div className="p-6 text-sm text-gray-500">Loading...</div>;
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="animate-stagger flex flex-col gap-6">
       <div>
         <h1 className="text-2xl font-bold text-gray-900">Compliance &amp; Renewals</h1>
         <p className="mt-1 text-sm text-gray-500">
@@ -46,7 +56,7 @@ export default function CompliancePage() {
         </div>
       </div>
 
-      <ComplianceTable trucks={initialTrucks} />
+      <ComplianceTable trucks={trucks} />
     </div>
   );
 }

@@ -4,8 +4,8 @@ import { useEffect, useState, type FormEvent } from "react";
 import { Dialog } from "@/components/ui/Dialog";
 import { Field, inputClass } from "@/components/ui/Field";
 import {
-  BILLING_METHOD_OPTIONS,
-  BILLING_TYPE_OPTIONS,
+  BILL_TO_OPTIONS,
+  PAYMENT_TYPE_OPTIONS,
   CARGO_CLASSIFICATION_OPTIONS,
   CONTAINER_SPECIFICATION_OPTIONS,
   DRIVER_ADVANCE_PAYMENT_METHOD_OPTIONS,
@@ -30,6 +30,7 @@ type TripFormDialogProps = {
   open: boolean;
   onClose: () => void;
   onSave: (trip: Trip) => void;
+  initialData?: Trip | null;
   existingTrips: Trip[];
   customers: Customer[];
   assignableDrivers: AssignableDriver[];
@@ -39,17 +40,19 @@ function todayIso(): string {
   return new Date().toISOString().slice(0, 10);
 }
 
-const emptyForm: Omit<Trip, "id" | "tripId" | "status" | "vehicleId"> = {
+const emptyForm: Omit<Trip, "id" | "tripId" | "status" | "vehicleId" | "assignedDate"> = {
   bookingReferenceNo: "",
   bookingCreatedDate: "",
   tripCategory: "",
   movementCategory: "",
   customerId: "",
   shipperConsignee: "",
-  billingAccount: "",
-  cargoContainerReference: "",
   cargoClassification: "",
   containerSpecification: "",
+  containerNumber: "",
+  containerNumber1: "",
+  containerNumber2: "",
+  cargoReference: "",
   releaseOrderReference: "",
   cargoWeight: "",
   origin: "",
@@ -59,15 +62,16 @@ const emptyForm: Omit<Trip, "id" | "tripId" | "status" | "vehicleId"> = {
   transportMethod: "",
   scheduledDate: "",
   driverId: "",
-  billingMethod: "",
-  billingType: "",
+  billTo: "",
+  paymentType: "",
   customerCashAdvance: "",
   customerFuelAdvanceAmount: "",
   customerFuelAdvanceLitres: "",
   driverAdvanceAmount: "",
   driverAdvancePaymentMethod: "",
   driverCompensationType: "",
-  transportHireCharge: "",
+  transportHireAmount: "",
+  transportCrossingAmount: "",
   finalSettlementAmount: "",
   internalRemarks: "",
   bookingInstructions: "",
@@ -77,6 +81,7 @@ export function TripFormDialog({
   open,
   onClose,
   onSave,
+  initialData,
   existingTrips,
   customers,
   assignableDrivers,
@@ -85,14 +90,21 @@ export function TripFormDialog({
 
   useEffect(() => {
     if (open) {
-      const initialDate = todayIso();
-      setForm({
-        ...emptyForm,
-        bookingCreatedDate: initialDate,
-        bookingReferenceNo: generateBookingReferenceNo(existingTrips, initialDate),
-      });
+      if (initialData) {
+        // Edit mode: populate form with existing trip data
+        const { id: _id, tripId: _tripId, status: _status, vehicleId: _vehicleId, ...rest } = initialData;
+        setForm(rest);
+      } else {
+        // Create mode: initialize with empty form
+        const initialDate = todayIso();
+        setForm({
+          ...emptyForm,
+          bookingCreatedDate: initialDate,
+          bookingReferenceNo: generateBookingReferenceNo(existingTrips, initialDate),
+        });
+      }
     }
-  }, [open, existingTrips]);
+  }, [open, initialData, existingTrips]);
 
   function update<K extends keyof typeof emptyForm>(key: K, value: (typeof emptyForm)[K]) {
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -106,30 +118,57 @@ export function TripFormDialog({
     }));
   }
 
+  function handleCustomerChange(customerId: string) {
+    const selectedCustomer = customers.find((c) => c.id === customerId);
+    if (selectedCustomer) {
+      setForm((prev) => ({
+        ...prev,
+        customerId,
+        shipperConsignee: selectedCustomer.name,
+      }));
+    } else {
+      update("customerId", customerId);
+    }
+  }
+
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const assigned = assignableDrivers.find((a) => a.driver.driverId === form.driverId);
     if (!assigned) return;
 
-    onSave({
-      id: crypto.randomUUID(),
-      tripId: generateTripId(existingTrips),
-      status: "Assigned",
-      vehicleId: assigned.truck.truckId,
-      ...form,
-    });
+    if (initialData) {
+      // Edit mode: keep existing id, tripId, status, vehicleId, assignedDate
+      onSave({
+        id: initialData.id,
+        tripId: initialData.tripId,
+        status: initialData.status,
+        assignedDate: initialData.assignedDate,
+        vehicleId: initialData.vehicleId,
+        ...form,
+      });
+    } else {
+      // Create mode: generate new id, tripId, set assignedDate to today, and use assigned truck
+      onSave({
+        id: crypto.randomUUID(),
+        tripId: generateTripId(existingTrips),
+        status: "Assigned",
+        assignedDate: todayIso(),
+        vehicleId: assigned.truck.truckId,
+        ...form,
+      });
+    }
   }
 
   const selectedAssignment = assignableDrivers.find((a) => a.driver.driverId === form.driverId);
 
   return (
-    <Dialog open={open} onClose={onClose} title="Assign Trip" className="max-w-3xl">
+    <Dialog open={open} onClose={onClose} title={initialData ? "Edit Trip" : "Assign Trip"} className="max-w-3xl">
       <form onSubmit={handleSubmit} className="flex flex-col gap-6">
         {/* Booking Information */}
         <section className="flex flex-col gap-4">
           <h3 className="text-sm font-semibold text-gray-900">Booking Information</h3>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Field label="Booking Reference No">
+            <Field label="Booking Reference No" required>
               <input
                 type="text"
                 readOnly
@@ -139,7 +178,7 @@ export function TripFormDialog({
               />
             </Field>
 
-            <Field label="Booking Created Date">
+            <Field label="Booking Created Date" required>
               <input
                 type="date"
                 required
@@ -149,7 +188,7 @@ export function TripFormDialog({
               />
             </Field>
 
-            <Field label="Trip Category">
+            <Field label="Trip Category" required>
               <select
                 required
                 value={form.tripCategory}
@@ -167,7 +206,7 @@ export function TripFormDialog({
               </select>
             </Field>
 
-            <Field label="Movement Category">
+            <Field label="Movement Category" required>
               <select
                 required
                 value={form.movementCategory}
@@ -191,11 +230,11 @@ export function TripFormDialog({
         <section className="flex flex-col gap-4">
           <h3 className="text-sm font-semibold text-gray-900">Customer Information</h3>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Field label="Customer Account">
+            <Field label="Customer Account" required>
               <select
                 required
                 value={form.customerId}
-                onChange={(e) => update("customerId", e.target.value)}
+                onChange={(e) => handleCustomerChange(e.target.value)}
                 className={inputClass}
               >
                 <option value="" disabled>
@@ -209,7 +248,7 @@ export function TripFormDialog({
               </select>
             </Field>
 
-            <Field label="Shipper / Consignee">
+            <Field label="Shipper / Consignee" required>
               <input
                 type="text"
                 required
@@ -219,36 +258,108 @@ export function TripFormDialog({
                 placeholder="e.g. Sri Lakshmi Traders"
               />
             </Field>
-
-            <Field label="Billing Account" className="sm:col-span-2">
-              <input
-                type="text"
-                required
-                value={form.billingAccount}
-                onChange={(e) => update("billingAccount", e.target.value)}
-                className={inputClass}
-                placeholder="e.g. Sri Lakshmi Traders"
-              />
-            </Field>
           </div>
+
+          {/* Customer Details Display */}
+          {form.customerId && (
+            <div className="rounded-lg border border-blue-200 bg-blue-50 p-4">
+              <h4 className="mb-3 text-sm font-semibold text-blue-900">Customer Details</h4>
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                {(() => {
+                  const customer = customers.find((c) => c.id === form.customerId);
+                  if (!customer) return null;
+                  return (
+                    <>
+                      <div>
+                        <p className="text-xs font-medium text-blue-700">Contact Person</p>
+                        <p className="mt-1 text-sm text-blue-900">{customer.contactPersonnelName}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs font-medium text-blue-700">Phone</p>
+                        <p className="mt-1 text-sm text-blue-900">{customer.phone}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs font-medium text-blue-700">Email</p>
+                        <p className="mt-1 text-sm text-blue-900">{customer.email}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs font-medium text-blue-700">Customer Type</p>
+                        <p className="mt-1 text-sm text-blue-900">{customer.customerType}</p>
+                      </div>
+                      <div className="sm:col-span-2">
+                        <p className="text-xs font-medium text-blue-700">Address</p>
+                        <p className="mt-1 text-sm text-blue-900">{customer.address}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs font-medium text-blue-700">GSTIN</p>
+                        <p className="mt-1 text-sm text-blue-900">{customer.gstin}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs font-medium text-blue-700">Status</p>
+                        <p className="mt-1 inline-block rounded-full bg-green-100 px-2.5 py-1 text-xs font-semibold text-green-700">
+                          {customer.status}
+                        </p>
+                      </div>
+                    </>
+                  );
+                })()}
+              </div>
+            </div>
+          )}
         </section>
 
         {/* Cargo Information */}
         <section className="flex flex-col gap-4">
           <h3 className="text-sm font-semibold text-gray-900">Cargo Information</h3>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Field label="Cargo / Container Reference">
-              <input
-                type="text"
-                required
-                value={form.cargoContainerReference}
-                onChange={(e) => update("cargoContainerReference", e.target.value)}
-                className={inputClass}
-                placeholder="e.g. CONT-554821"
-              />
-            </Field>
+            {form.containerSpecification === "2 X 20 FEET CONTAINERS" ? (
+              <>
+                <Field label="Container Number for the First Container" required>
+                  <input
+                    type="text"
+                    required
+                    value={form.containerNumber1}
+                    onChange={(e) => update("containerNumber1", e.target.value)}
+                    className={inputClass}
+                    placeholder="e.g. CONT-554821"
+                  />
+                </Field>
+                <Field label="Container Number for the Second Container" required>
+                  <input
+                    type="text"
+                    required
+                    value={form.containerNumber2}
+                    onChange={(e) => update("containerNumber2", e.target.value)}
+                    className={inputClass}
+                    placeholder="e.g. CONT-554822"
+                  />
+                </Field>
+              </>
+            ) : form.containerSpecification === "20 FT CONTAINER" || form.containerSpecification === "40 FT CONTAINER" ? (
+              <Field label="Container Number" required>
+                <input
+                  type="text"
+                  required
+                  value={form.containerNumber}
+                  onChange={(e) => update("containerNumber", e.target.value)}
+                  className={inputClass}
+                  placeholder="e.g. CONT-554821"
+                />
+              </Field>
+            ) : form.containerSpecification === "OPEN LOAD CARGO" ? (
+              <Field label="Cargo Reference" required>
+                <input
+                  type="text"
+                  required
+                  value={form.cargoReference}
+                  onChange={(e) => update("cargoReference", e.target.value)}
+                  className={inputClass}
+                  placeholder="e.g. CARGO-12345"
+                />
+              </Field>
+            ) : null}
 
-            <Field label="Cargo Classification">
+            <Field label="Cargo Classification" required>
               <select
                 required
                 value={form.cargoClassification}
@@ -266,7 +377,7 @@ export function TripFormDialog({
               </select>
             </Field>
 
-            <Field label="Container Specification">
+            <Field label="Container Specification" required>
               <select
                 required
                 value={form.containerSpecification}
@@ -284,7 +395,7 @@ export function TripFormDialog({
               </select>
             </Field>
 
-            <Field label="Release Order Reference">
+            <Field label="Release Order Reference" required>
               <input
                 type="text"
                 required
@@ -295,7 +406,7 @@ export function TripFormDialog({
               />
             </Field>
 
-            <Field label="Cargo Weight (tons)">
+            <Field label="Cargo Weight (tons)" required>
               <input
                 type="number"
                 required
@@ -314,7 +425,7 @@ export function TripFormDialog({
         <section className="flex flex-col gap-4">
           <h3 className="text-sm font-semibold text-gray-900">Route Information</h3>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Field label="Origin Location">
+            <Field label="Origin Location" required>
               <input
                 type="text"
                 required
@@ -325,7 +436,7 @@ export function TripFormDialog({
               />
             </Field>
 
-            <Field label="Destination Location">
+            <Field label="Destination Location" required>
               <input
                 type="text"
                 required
@@ -342,7 +453,7 @@ export function TripFormDialog({
         <section className="flex flex-col gap-4">
           <h3 className="text-sm font-semibold text-gray-900">Shipping Information</h3>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Field label="Shipping Line">
+            <Field label="Shipping Line" required>
               <input
                 type="text"
                 value={form.shippingLine}
@@ -352,7 +463,7 @@ export function TripFormDialog({
               />
             </Field>
 
-            <Field label="Vessel Name">
+            <Field label="Vessel Name" required>
               <input
                 type="text"
                 value={form.vesselName}
@@ -368,7 +479,7 @@ export function TripFormDialog({
         <section className="flex flex-col gap-4">
           <h3 className="text-sm font-semibold text-gray-900">Vehicle &amp; Trip Assignment</h3>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Field label="Transport Method">
+            <Field label="Transport Method" required>
               <select
                 required
                 value={form.transportMethod}
@@ -386,7 +497,7 @@ export function TripFormDialog({
               </select>
             </Field>
 
-            <Field label="Scheduled Trip Date">
+            <Field label="Scheduled Trip Date" required>
               <input
                 type="date"
                 required
@@ -425,17 +536,17 @@ export function TripFormDialog({
         <section className="flex flex-col gap-4">
           <h3 className="text-sm font-semibold text-gray-900">Payment &amp; Advances</h3>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Field label="Billing Method">
+            <Field label="Bill To" required>
               <select
                 required
-                value={form.billingMethod}
-                onChange={(e) => update("billingMethod", e.target.value as Trip["billingMethod"])}
+                value={form.billTo}
+                onChange={(e) => update("billTo", e.target.value as Trip["billTo"])}
                 className={inputClass}
               >
                 <option value="" disabled>
-                  Select billing method
+                  Select bill to
                 </option>
-                {BILLING_METHOD_OPTIONS.map((option) => (
+                {BILL_TO_OPTIONS.map((option) => (
                   <option key={option} value={option}>
                     {option}
                   </option>
@@ -443,17 +554,17 @@ export function TripFormDialog({
               </select>
             </Field>
 
-            <Field label="Billing Type">
+            <Field label="Payment Type" required>
               <select
                 required
-                value={form.billingType}
-                onChange={(e) => update("billingType", e.target.value as Trip["billingType"])}
+                value={form.paymentType}
+                onChange={(e) => update("paymentType", e.target.value as Trip["paymentType"])}
                 className={inputClass}
               >
                 <option value="" disabled>
-                  Select billing type
+                  Select payment type
                 </option>
-                {BILLING_TYPE_OPTIONS.map((option) => (
+                {PAYMENT_TYPE_OPTIONS.map((option) => (
                   <option key={option} value={option}>
                     {option}
                   </option>
@@ -461,7 +572,7 @@ export function TripFormDialog({
               </select>
             </Field>
 
-            <Field label="Customer Cash Advance (₹)">
+            <Field label="Customer Cash Advance (₹)" required>
               <input
                 type="number"
                 min="0"
@@ -472,7 +583,7 @@ export function TripFormDialog({
               />
             </Field>
 
-            <Field label="Customer Fuel Advance (₹)">
+            <Field label="Customer Fuel Advance (₹)" required>
               <input
                 type="number"
                 min="0"
@@ -483,7 +594,7 @@ export function TripFormDialog({
               />
             </Field>
 
-            <Field label="Customer Fuel Advance (Litres)">
+            <Field label="Customer Fuel Advance (Litres)" required>
               <input
                 type="number"
                 min="0"
@@ -500,7 +611,7 @@ export function TripFormDialog({
         <section className="flex flex-col gap-4">
           <h3 className="text-sm font-semibold text-gray-900">Driver Compensation</h3>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Field label="Driver Advance Amount (₹)">
+            <Field label="Driver Advance Amount (₹)" required>
               <input
                 type="number"
                 min="0"
@@ -511,40 +622,38 @@ export function TripFormDialog({
               />
             </Field>
 
-            <Field label="Driver Advance Payment Method">
-              <select
+            <Field label="Driver Advance Payment Method" required>
+              <input
+                type="text"
                 required
+                list="driver-advance-payment-method-options"
                 value={form.driverAdvancePaymentMethod}
                 onChange={(e) => update("driverAdvancePaymentMethod", e.target.value as Trip["driverAdvancePaymentMethod"])}
                 className={inputClass}
-              >
-                <option value="" disabled>
-                  Select payment method
-                </option>
+                placeholder="Select or type payment method"
+              />
+              <datalist id="driver-advance-payment-method-options">
                 {DRIVER_ADVANCE_PAYMENT_METHOD_OPTIONS.map((option) => (
-                  <option key={option} value={option}>
-                    {option}
-                  </option>
+                  <option key={option} value={option} />
                 ))}
-              </select>
+              </datalist>
             </Field>
 
-            <Field label="Driver Compensation Type" className="sm:col-span-2">
-              <select
+            <Field label="Driver Compensation Type" required>
+              <input
+                type="text"
                 required
+                list="driver-compensation-type-options"
                 value={form.driverCompensationType}
                 onChange={(e) => update("driverCompensationType", e.target.value as Trip["driverCompensationType"])}
                 className={inputClass}
-              >
-                <option value="" disabled>
-                  Select compensation type
-                </option>
+                placeholder="Select or type compensation type"
+              />
+              <datalist id="driver-compensation-type-options">
                 {DRIVER_COMPENSATION_TYPE_OPTIONS.map((option) => (
-                  <option key={option} value={option}>
-                    {option}
-                  </option>
+                  <option key={option} value={option} />
                 ))}
-              </select>
+              </datalist>
             </Field>
           </div>
         </section>
@@ -553,25 +662,25 @@ export function TripFormDialog({
         <section className="flex flex-col gap-4">
           <h3 className="text-sm font-semibold text-gray-900">Transport Cost Details</h3>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Field label="Transport Hire Charge (₹)">
+            <Field label="Transport Hire Amount (₹)" required>
               <input
                 type="number"
                 min="0"
-                value={form.transportHireCharge}
-                onChange={(e) => update("transportHireCharge", e.target.value)}
+                value={form.transportHireAmount}
+                onChange={(e) => update("transportHireAmount", e.target.value)}
                 className={inputClass}
                 placeholder="e.g. 32000"
               />
             </Field>
 
-            <Field label="Final Settlement Amount (₹)">
+            <Field label="Transport Crossing Amount (₹)" required>
               <input
                 type="number"
                 min="0"
-                value={form.finalSettlementAmount}
-                onChange={(e) => update("finalSettlementAmount", e.target.value)}
+                value={form.transportCrossingAmount}
+                onChange={(e) => update("transportCrossingAmount", e.target.value)}
                 className={inputClass}
-                placeholder="e.g. 30000"
+                placeholder="e.g. 0"
               />
             </Field>
           </div>
@@ -581,7 +690,7 @@ export function TripFormDialog({
         <section className="flex flex-col gap-4">
           <h3 className="text-sm font-semibold text-gray-900">Operational Notes</h3>
           <div className="grid grid-cols-1 gap-4">
-            <Field label="Internal Remarks">
+            <Field label="Internal Remarks" required>
               <textarea
                 value={form.internalRemarks}
                 onChange={(e) => update("internalRemarks", e.target.value)}
@@ -590,7 +699,7 @@ export function TripFormDialog({
               />
             </Field>
 
-            <Field label="Booking Instructions">
+            <Field label="Booking Instructions" required>
               <textarea
                 value={form.bookingInstructions}
                 onChange={(e) => update("bookingInstructions", e.target.value)}
@@ -605,7 +714,7 @@ export function TripFormDialog({
           <button
             type="button"
             onClick={onClose}
-            className="rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+            className="btn-interactive rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-700 transition-all duration-200 hover:bg-gray-50 active:scale-95"
           >
             Cancel
           </button>

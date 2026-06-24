@@ -1,29 +1,42 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { CompensationTable, type CompensationPerson } from "@/components/compensation/CompensationTable";
 import { PaymentDialog } from "@/components/compensation/PaymentDialog";
 import { TransactionHistoryDialog } from "@/components/compensation/TransactionHistoryDialog";
-import { initialDrivers } from "@/lib/driver-data";
-import { initialTrips } from "@/lib/trip-data";
-import { driverStatuses, initialDriverTransactions } from "@/lib/compensation-data";
+import { driversApi, tripsApi, financeApi } from "@/lib/api";
+import type { Driver } from "@/types/driver";
+import type { Trip } from "@/types/trip";
 import type { CompensationTransaction, CompensationTransactionType } from "@/types/compensation";
 
 export default function DriverCompensationPage() {
-  const [transactions, setTransactions] = useState<CompensationTransaction[]>(initialDriverTransactions);
+  const [drivers, setDrivers] = useState<Driver[]>([]);
+  const [trips, setTrips] = useState<Trip[]>([]);
+  const [transactions, setTransactions] = useState<CompensationTransaction[]>([]);
+  const [loading, setLoading] = useState(true);
   const [paymentTarget, setPaymentTarget] = useState<CompensationPerson | null>(null);
   const [paymentType, setPaymentType] = useState<CompensationTransactionType>("Salary");
   const [historyTarget, setHistoryTarget] = useState<CompensationPerson | null>(null);
 
+  useEffect(() => {
+    Promise.all([driversApi.list(), tripsApi.list(), financeApi.listDriverCompensation()])
+      .then(([d, t, tx]) => {
+        setDrivers(d);
+        setTrips(t);
+        setTransactions(tx);
+      })
+      .finally(() => setLoading(false));
+  }, []);
+
   const people: CompensationPerson[] = useMemo(
     () =>
-      initialDrivers.map((driver) => ({
+      drivers.map((driver) => ({
         id: driver.id,
         photoUrl: driver.photoUrl,
         name: driver.name,
-        status: driverStatuses[driver.id] ?? "Active",
+        status: "Active",
       })),
-    []
+    [drivers]
   );
 
   function handlePayAdvance(person: CompensationPerson) {
@@ -36,27 +49,26 @@ export default function DriverCompensationPage() {
     setPaymentType("Salary");
   }
 
-  const tripNumbers = useMemo(() => initialTrips.map((trip) => trip.tripId), []);
+  const tripNumbers = useMemo(() => trips.map((trip) => trip.tripId), [trips]);
 
-  function handleSavePayment(payment: { amount: number; date: string; note: string; tripNumber?: string }) {
+  async function handleSavePayment(payment: { amount: number; date: string; note: string; tripNumber?: string }) {
     if (!paymentTarget) return;
-    setTransactions((prev) => [
-      ...prev,
-      {
-        id: crypto.randomUUID(),
-        personId: paymentTarget.id,
-        type: paymentType,
-        amount: payment.amount,
-        date: payment.date,
-        note: payment.note,
-        tripNumber: payment.tripNumber,
-      },
-    ]);
+    const created = await financeApi.addDriverCompensation(
+      paymentTarget.id,
+      paymentType,
+      payment.amount,
+      payment.date,
+      payment.note,
+      payment.tripNumber
+    );
+    setTransactions((prev) => [...prev, created]);
     setPaymentTarget(null);
   }
 
+  if (loading) return <div className="p-6 text-sm text-gray-500">Loading...</div>;
+
   return (
-    <div className="flex flex-col gap-6">
+    <div className="animate-stagger flex flex-col gap-6">
       <div>
         <h1 className="text-2xl font-bold text-gray-900">Driver Compensation</h1>
         <p className="mt-1 text-sm text-gray-500">Pay advances and salaries to drivers</p>

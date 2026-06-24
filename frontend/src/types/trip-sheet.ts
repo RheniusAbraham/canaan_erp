@@ -32,7 +32,6 @@ export type TripSheetData = {
   driverAdvanceAdditional: string;
 
   // Trip Distance & Cargo
-  mileage: string;
   startKm: string;
   endKm: string;
   totalKm: string;
@@ -46,7 +45,6 @@ export type TripSheetData = {
   totalDiesel: string;
   dieselRate: string;
   dieselExpense: string;
-  dieselMileage: string;
 
   // Driver Settlement
   driverPay: string;

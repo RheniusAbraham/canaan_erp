@@ -52,7 +52,7 @@ export function EmiFormDialog({ open, onClose, onSave, initialData }: EmiFormDia
     <Dialog open={open} onClose={onClose} title={initialData ? "Edit EMI Entry" : "Add EMI Entry"}>
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <Field label="EMI Name">
+          <Field label="EMI Name" required>
             <input
               type="text"
               required
@@ -63,7 +63,7 @@ export function EmiFormDialog({ open, onClose, onSave, initialData }: EmiFormDia
             />
           </Field>
 
-          <Field label="Truck Registration">
+          <Field label="Truck Registration" required>
             <select
               required
               value={form.truckRegistration}
@@ -81,7 +81,7 @@ export function EmiFormDialog({ open, onClose, onSave, initialData }: EmiFormDia
             </select>
           </Field>
 
-          <Field label="Loan Number">
+          <Field label="Loan Number" required>
             <input
               type="text"
               required
@@ -92,7 +92,7 @@ export function EmiFormDialog({ open, onClose, onSave, initialData }: EmiFormDia
             />
           </Field>
 
-          <Field label="Bank Name">
+          <Field label="Bank Name" required>
             <input
               type="text"
               required
@@ -103,7 +103,7 @@ export function EmiFormDialog({ open, onClose, onSave, initialData }: EmiFormDia
             />
           </Field>
 
-          <Field label="Loan Amount">
+          <Field label="Loan Amount" required>
             <input
               type="number"
               required
@@ -115,7 +115,7 @@ export function EmiFormDialog({ open, onClose, onSave, initialData }: EmiFormDia
             />
           </Field>
 
-          <Field label="EMI Amount">
+          <Field label="EMI Amount" required>
             <input
               type="number"
               required
@@ -127,7 +127,7 @@ export function EmiFormDialog({ open, onClose, onSave, initialData }: EmiFormDia
             />
           </Field>
 
-          <Field label="EMI Start Date">
+          <Field label="EMI Start Date" required>
             <input
               type="date"
               required
@@ -137,7 +137,7 @@ export function EmiFormDialog({ open, onClose, onSave, initialData }: EmiFormDia
             />
           </Field>
 
-          <Field label="EMI End Date">
+          <Field label="EMI End Date" required>
             <input
               type="date"
               required
@@ -147,7 +147,7 @@ export function EmiFormDialog({ open, onClose, onSave, initialData }: EmiFormDia
             />
           </Field>
 
-          <Field label="Tenure (in Months)">
+          <Field label="Tenure (in Months)" required>
             <input
               type="number"
               required
@@ -159,7 +159,7 @@ export function EmiFormDialog({ open, onClose, onSave, initialData }: EmiFormDia
             />
           </Field>
 
-          <Field label="Date of EMI Payment">
+          <Field label="Date of EMI Payment" required>
             <input
               type="date"
               required
@@ -174,13 +174,13 @@ export function EmiFormDialog({ open, onClose, onSave, initialData }: EmiFormDia
           <button
             type="button"
             onClick={onClose}
-            className="rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+            className="btn-interactive rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-700 transition-all duration-200 hover:bg-gray-50 active:scale-95"
           >
             Cancel
           </button>
           <button
             type="submit"
-            className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+            className="btn-interactive rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-all duration-200 hover:bg-blue-700 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {initialData ? "Save Changes" : "Add EMI Entry"}
           </button>

@@ -1,65 +1,132 @@
 "use client";
 
-import { useState } from "react";
-import { useTripWorkflow } from "@/context/TripWorkflowContext";
+import { useEffect, useState } from "react";
+import { tripsApi, driversApi, trucksApi, customersApi } from "@/lib/api";
 import { VerifyTripDialog } from "@/components/trips/VerifyTripDialog";
 import { TripSheetDialog } from "@/components/trips/TripSheetDialog";
-import { initialDrivers } from "@/lib/driver-data";
-import { initialTrucks } from "@/lib/truck-data";
-import { initialCustomers } from "@/lib/customer-data";
-import { initialTrips } from "@/lib/trip-data";
 import type { Trip } from "@/types/trip";
+import type { Driver } from "@/types/driver";
+import type { Truck } from "@/types/truck";
+import type { Customer } from "@/types/customer";
 import type { TripSheetData } from "@/types/trip-sheet";
+import type { TripClosureData } from "@/types/trip-closure";
 import { n, calcTripExpenses } from "@/types/trip-sheet";
 
 type SheetDialogMode = "view" | "edit";
 
 export default function TripVerificationPage() {
-  const { closures, sheets, addSheet, verifications, addVerification, flags, addFlag } = useTripWorkflow();
+  const [trips, setTrips] = useState<Trip[]>([]);
+  const [drivers, setDrivers] = useState<Driver[]>([]);
+  const [trucks, setTrucks] = useState<Truck[]>([]);
+  const [customers, setCustomers] = useState<Customer[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  // Which trip is open in the Verify dialog
+  const [closures, setClosures] = useState<Map<string, TripClosureData>>(new Map());
+  const [sheets, setSheets] = useState<Map<string, TripSheetData>>(new Map());
+  const [verifiedIds, setVerifiedIds] = useState<Set<string>>(new Set());
+  const [flaggedIds, setFlaggedIds] = useState<Set<string>>(new Set());
+
   const [verifyTrip, setVerifyTrip] = useState<Trip | null>(null);
-  // Which trip is open in the Sheet dialog (view/edit)
   const [sheetTrip, setSheetTrip] = useState<Trip | null>(null);
   const [sheetMode, setSheetMode] = useState<SheetDialogMode>("view");
 
-  const driverById = new Map(initialDrivers.map((d) => [d.driverId, d]));
-  const truckById = new Map(initialTrucks.map((t) => [t.truckId, t]));
-  const customerById = new Map(initialCustomers.map((c) => [c.id, c]));
+  useEffect(() => {
+    Promise.all([tripsApi.list(), driversApi.list(), trucksApi.list(), customersApi.list()])
+      .then(([allTrips, d, tr, c]) => {
+        setDrivers(d);
+        setTrucks(tr);
+        setCustomers(c);
 
-  const sheettedTrips = initialTrips.filter((t) => sheets.has(t.id));
+        // Trips that have a sheet
+        const sheettedTrips = allTrips.filter((t) => (t as any).hasSheet === true);
+        setTrips(sheettedTrips);
+
+        // Pre-populate verified/flagged from server state
+        const verified = new Set<string>(
+          allTrips
+            .filter((t) => (t as any).verificationStatus === "verified")
+            .map((t) => t.id)
+        );
+        const flagged = new Set<string>(
+          allTrips
+            .filter((t) => (t as any).verificationStatus === "flagged")
+            .map((t) => t.id)
+        );
+        setVerifiedIds(verified);
+        setFlaggedIds(flagged);
+
+        // Fetch closures and sheets for all sheeted trips
+        return Promise.all([
+          Promise.all(
+            sheettedTrips.map((trip) =>
+              tripsApi.getClosure(trip.id).then((closure) => ({ tripId: trip.id, closure })).catch(() => null)
+            )
+          ),
+          Promise.all(
+            sheettedTrips.map((trip) =>
+              tripsApi.getSheet(trip.id).then((sheet) => ({ tripId: trip.id, sheet })).catch(() => null)
+            )
+          ),
+        ]);
+      })
+      .then(([closureResults, sheetResults]) => {
+        const closureMap = new Map<string, TripClosureData>();
+        for (const result of closureResults) {
+          if (result) closureMap.set(result.tripId, result.closure);
+        }
+        setClosures(closureMap);
+
+        const sheetMap = new Map<string, TripSheetData>();
+        for (const result of sheetResults) {
+          if (result) sheetMap.set(result.tripId, result.sheet);
+        }
+        setSheets(sheetMap);
+      })
+      .finally(() => setLoading(false));
+  }, []);
+
+  const driverById = new Map(drivers.map((d) => [d.driverId, d]));
+  const truckById = new Map(trucks.map((t) => [t.truckId, t]));
+  const customerById = new Map(customers.map((c) => [c.id, c]));
 
   function openSheetDialog(trip: Trip, mode: SheetDialogMode) {
-    setVerifyTrip(null); // close verify dialog first
+    setVerifyTrip(null);
     setSheetTrip(trip);
     setSheetMode(mode);
   }
 
-  function handleSaveSheet(data: TripSheetData) {
-    addSheet(data);
+  async function handleSaveSheet(data: TripSheetData) {
+    if (!sheetTrip) return;
+    const saved = await tripsApi.upsertSheet(sheetTrip.id, data);
+    setSheets((prev) => new Map([...prev, [sheetTrip.id, saved]]));
+    const trip = trips.find((t) => t.id === data.tripId) ?? null;
     setSheetTrip(null);
-    // Reopen verify dialog for the same trip
-    const trip = initialTrips.find((t) => t.id === data.tripId) ?? null;
     setVerifyTrip(trip);
   }
 
-  function handleConfirmVerification() {
+  async function handleConfirmVerification() {
     if (!verifyTrip) return;
-    addVerification(verifyTrip.id);
+    await tripsApi.verify(verifyTrip.id);
+    setVerifiedIds((prev) => new Set([...prev, verifyTrip.id]));
+    setFlaggedIds((prev) => { const s = new Set(prev); s.delete(verifyTrip.id); return s; });
     setVerifyTrip(null);
   }
 
-  function handleFlag() {
+  async function handleFlag() {
     if (!verifyTrip) return;
-    addFlag(verifyTrip.id);
+    await tripsApi.flag(verifyTrip.id);
+    setFlaggedIds((prev) => new Set([...prev, verifyTrip.id]));
+    setVerifiedIds((prev) => { const s = new Set(prev); s.delete(verifyTrip.id); return s; });
     setVerifyTrip(null);
   }
 
-  const fmt = (n: number) =>
-    `₹${n.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  const fmt = (v: number) =>
+    `₹${v.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+  if (loading) return <div className="p-6 text-sm text-gray-500">Loading...</div>;
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="animate-stagger flex flex-col gap-6">
       <div>
         <h1 className="text-2xl font-bold text-gray-900">Trip Verification</h1>
         <p className="mt-1 text-sm text-gray-500">
@@ -67,7 +134,7 @@ export default function TripVerificationPage() {
         </p>
       </div>
 
-      {sheettedTrips.length === 0 ? (
+      {trips.length === 0 ? (
         <div className="rounded-xl border border-gray-200 bg-white p-10 text-center text-sm text-gray-500">
           No trips ready for verification. Add a trip sheet on the{" "}
           <a href="/trips/reconciliation" className="text-blue-600 underline">Trip Reconciliation</a> page first.
@@ -86,17 +153,17 @@ export default function TripVerificationPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
-              {sheettedTrips.map((trip) => {
+              {trips.map((trip) => {
                 const closure = closures.get(trip.id);
-                const sheet = sheets.get(trip.id)!;
+                const sheet = sheets.get(trip.id);
                 const driver = driverById.get(trip.driverId);
                 const truck = truckById.get(trip.vehicleId);
                 const customer = customerById.get(trip.customerId);
-                const isVerified = verifications.has(trip.id);
-                const isFlagged = flags.has(trip.id);
+                const isVerified = verifiedIds.has(trip.id);
+                const isFlagged = flaggedIds.has(trip.id);
 
-                const totalTransport = n(sheet.hireAmount);
-                const totalBilling   = calcTripExpenses(sheet);
+                const totalTransport = sheet ? n(sheet.hireAmount) : 0;
+                const totalBilling = sheet ? calcTripExpenses(sheet) : 0;
 
                 return (
                   <tr key={trip.id} className="hover:bg-gray-50">
@@ -169,7 +236,6 @@ export default function TripVerificationPage() {
         </div>
       )}
 
-      {/* Verify dialog */}
       <VerifyTripDialog
         open={verifyTrip !== null}
         trip={verifyTrip}
@@ -182,7 +248,6 @@ export default function TripVerificationPage() {
         onConfirm={handleConfirmVerification}
       />
 
-      {/* Trip sheet view / edit dialog */}
       <TripSheetDialog
         open={sheetTrip !== null}
         trip={sheetTrip}
@@ -190,7 +255,6 @@ export default function TripVerificationPage() {
         existingSheet={sheetTrip ? sheets.get(sheetTrip.id) : undefined}
         readOnly={sheetMode === "view"}
         onClose={() => {
-          // Reopen the verify dialog for the same trip
           setVerifyTrip(sheetTrip);
           setSheetTrip(null);
         }}

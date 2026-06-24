@@ -1,22 +1,31 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Plus } from "lucide-react";
 import { TyreInventoryTable } from "@/components/tyre-inventory/TyreInventoryTable";
 import { TyreInventoryFormDialog } from "@/components/tyre-inventory/TyreInventoryFormDialog";
 import { TyreHistoryDialog } from "@/components/tyre-inventory/TyreHistoryDialog";
-import { TyreReportDialog } from "@/components/tyre-inventory/TyreReportDialog";
-import { useTyreInventory } from "@/context/TyreInventoryContext";
+import { tyreApi } from "@/lib/api";
 import type { TyreInventoryItem } from "@/types/tyre-inventory";
+import type { TyreFitmentRecord } from "@/types/tyre-fitment";
 
 export default function TyreInventoryPage() {
-  const { tyres, setTyres, fitmentRecords } = useTyreInventory();
+  const [tyres, setTyres] = useState<TyreInventoryItem[]>([]);
+  const [fitmentRecords, setFitmentRecords] = useState<TyreFitmentRecord[]>([]);
+  const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingTyre, setEditingTyre] = useState<TyreInventoryItem | null>(null);
   const [historyDialogOpen, setHistoryDialogOpen] = useState(false);
   const [historyTyre, setHistoryTyre] = useState<TyreInventoryItem | null>(null);
-  const [reportDialogOpen, setReportDialogOpen] = useState(false);
-  const [reportTyre, setReportTyre] = useState<TyreInventoryItem | null>(null);
+
+  useEffect(() => {
+    Promise.all([tyreApi.listInventory(), tyreApi.listFitments()])
+      .then(([t, f]) => {
+        setTyres(t);
+        setFitmentRecords(f);
+      })
+      .finally(() => setLoading(false));
+  }, []);
 
   function handleAdd() {
     setEditingTyre(null);
@@ -28,19 +37,21 @@ export default function TyreInventoryPage() {
     setDialogOpen(true);
   }
 
-  function handleDelete(id: string) {
+  async function handleDelete(id: string) {
     if (!confirm("Delete this tyre?")) return;
+    await tyreApi.deleteTyre(id);
     setTyres((prev) => prev.filter((tyre) => tyre.id !== id));
   }
 
-  function handleSave(tyre: TyreInventoryItem) {
-    setTyres((prev) => {
-      const exists = prev.some((existing) => existing.id === tyre.id);
-      if (exists) {
-        return prev.map((existing) => (existing.id === tyre.id ? tyre : existing));
-      }
-      return [...prev, tyre];
-    });
+  async function handleSave(tyre: TyreInventoryItem) {
+    const exists = tyres.some((existing) => existing.id === tyre.id);
+    if (exists) {
+      const updated = await tyreApi.updateTyre(tyre.id, tyre);
+      setTyres((prev) => prev.map((existing) => (existing.id === tyre.id ? updated : existing)));
+    } else {
+      const created = await tyreApi.createTyre(tyre);
+      setTyres((prev) => [...prev, created]);
+    }
     setDialogOpen(false);
   }
 
@@ -49,19 +60,10 @@ export default function TyreInventoryPage() {
     setHistoryDialogOpen(true);
   }
 
-  function handleViewReport(tyre: TyreInventoryItem) {
-    setReportTyre(tyre);
-    setReportDialogOpen(true);
-  }
-
-  function handleFlagForRetreading(tyre: TyreInventoryItem) {
-    setTyres((prev) =>
-      prev.map((existing) => (existing.id === tyre.id ? { ...existing, flaggedForRetreading: true } : existing))
-    );
-  }
+  if (loading) return <div className="p-6 text-sm text-gray-500">Loading...</div>;
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="animate-stagger flex flex-col gap-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Tyre Inventory</h1>
@@ -71,21 +73,22 @@ export default function TyreInventoryPage() {
           type="button"
           onClick={handleAdd}
           className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+         
+         
         >
           <Plus className="h-4 w-4" />
           Add Tyre
         </button>
       </div>
 
-      <TyreInventoryTable
-        tyres={tyres}
-        fitmentRecords={fitmentRecords}
-        onEdit={handleEdit}
-        onDelete={handleDelete}
-        onViewHistory={handleViewHistory}
-        onFlagForRetreading={handleFlagForRetreading}
-        onViewReport={handleViewReport}
-      />
+      <div>
+        <TyreInventoryTable
+          tyres={tyres}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+          onViewHistory={handleViewHistory}
+        />
+      </div>
 
       <TyreInventoryFormDialog
         open={dialogOpen}
@@ -102,12 +105,6 @@ export default function TyreInventoryPage() {
         records={fitmentRecords}
       />
 
-      <TyreReportDialog
-        open={reportDialogOpen}
-        onClose={() => setReportDialogOpen(false)}
-        tyre={reportTyre}
-        records={fitmentRecords}
-      />
     </div>
   );
 }

@@ -1,8 +1,9 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { RecurringPaymentsTable } from "@/components/finance/RecurringPaymentsTable";
-import { initialRecurringPayments } from "@/lib/finance-data";
+import { financeApi } from "@/lib/api";
+import type { RecurringPayment } from "@/types/finance";
 
 function formatCurrency(amount: number): string {
   return new Intl.NumberFormat("en-IN", {
@@ -13,11 +14,18 @@ function formatCurrency(amount: number): string {
 }
 
 export default function RecurringPaymentsPage() {
+  const [payments, setPayments] = useState<RecurringPayment[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    financeApi.listRecurring().then(setPayments).finally(() => setLoading(false));
+  }, []);
+
   const summary = useMemo(() => {
     let active = 0;
     let paused = 0;
     let monthlyTotal = 0;
-    for (const payment of initialRecurringPayments) {
+    for (const payment of payments) {
       if (payment.status === "Active") {
         active += 1;
         if (payment.frequency === "Monthly") monthlyTotal += payment.amount;
@@ -28,10 +36,12 @@ export default function RecurringPaymentsPage() {
       }
     }
     return { active, paused, monthlyTotal };
-  }, []);
+  }, [payments]);
+
+  if (loading) return <div className="p-6 text-sm text-gray-500">Loading...</div>;
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="animate-stagger flex flex-col gap-6">
       <div>
         <h1 className="text-2xl font-bold text-gray-900">Recurring Payments</h1>
         <p className="mt-1 text-sm text-gray-500">
@@ -54,7 +64,7 @@ export default function RecurringPaymentsPage() {
         </div>
       </div>
 
-      <RecurringPaymentsTable payments={initialRecurringPayments} />
+      <RecurringPaymentsTable payments={payments} />
     </div>
   );
 }

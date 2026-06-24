@@ -1,9 +1,5 @@
-export type TruckHealth = "Excellent" | "Good" | "Fair" | "Poor" | "Critical";
-
 export type TruckMaintenanceSummary = {
   truckId: string;
-  health: TruckHealth;
-  reliabilityScore: number;
 };
 
 export type MaintenanceRecord = {

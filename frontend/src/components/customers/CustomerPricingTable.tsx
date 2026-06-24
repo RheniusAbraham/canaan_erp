@@ -14,10 +14,10 @@ type CustomerPricingTableProps = {
 
 const columns = [
   "Customer Name",
-  "Customer Origin",
   "Customer Destination",
   "Load Type",
   "Container Type",
+  "Weight (In tons)",
   "Rate",
   "Valid From",
   "Valid To",
@@ -62,10 +62,10 @@ export function CustomerPricingTable({ pricing, customers, onEdit, onDelete }: C
             return (
               <tr key={entry.id} className="hover:bg-gray-50">
                 <td className="px-4 py-3 font-medium text-gray-900">{customer?.name ?? "—"}</td>
-                <td className="px-4 py-3 text-gray-600">{entry.customerOrigin}</td>
                 <td className="px-4 py-3 text-gray-600">{entry.customerDestination}</td>
                 <td className="px-4 py-3 text-gray-600">{entry.loadType}</td>
                 <td className="px-4 py-3 text-gray-600">{entry.containerType}</td>
+                <td className="px-4 py-3 text-gray-600">{entry.weightInTons}</td>
                 <td className="px-4 py-3 text-gray-600">{entry.rate}</td>
                 <td className="px-4 py-3 text-gray-600">{entry.validFrom}</td>
                 <td className="px-4 py-3 text-gray-600">{entry.validTo}</td>
@@ -85,7 +85,7 @@ export function CustomerPricingTable({ pricing, customers, onEdit, onDelete }: C
                       type="button"
                       onClick={() => onEdit(entry)}
                       aria-label={`Edit pricing for ${customer?.name ?? "customer"}`}
-                      className="rounded-md p-1.5 text-gray-500 hover:bg-blue-50 hover:text-blue-600"
+                      className="transition-all duration-300 group rounded-md p-1.5 text-gray-500 hover:bg-blue-50 hover:text-blue-600"
                     >
                       <Pencil className="h-4 w-4" />
                     </button>
@@ -93,7 +93,7 @@ export function CustomerPricingTable({ pricing, customers, onEdit, onDelete }: C
                       type="button"
                       onClick={() => onDelete(entry.id)}
                       aria-label={`Delete pricing for ${customer?.name ?? "customer"}`}
-                      className="rounded-md p-1.5 text-gray-500 hover:bg-red-50 hover:text-red-600"
+                      className="transition-all duration-300 group rounded-md p-1.5 text-gray-500 hover:bg-red-50 hover:text-red-600"
                     >
                       <Trash2 className="h-4 w-4" />
                     </button>

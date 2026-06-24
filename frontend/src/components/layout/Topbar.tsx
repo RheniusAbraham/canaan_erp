@@ -2,8 +2,25 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 import { Home, ChevronRight, Search, Bell, ChevronDown } from "lucide-react";
 import { sidebarSections } from "@/lib/nav-config";
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+
+function useBackendStatus() {
+  const [online, setOnline] = useState<boolean | null>(null);
+  useEffect(() => {
+    const check = () =>
+      fetch(`${API_URL}/`)
+        .then(() => setOnline(true))
+        .catch(() => setOnline(false));
+    check();
+    const id = setInterval(check, 15000);
+    return () => clearInterval(id);
+  }, []);
+  return online;
+}
 
 function getPageLabel(pathname: string): string {
   for (const section of sidebarSections) {
@@ -17,6 +34,7 @@ function getPageLabel(pathname: string): string {
 export function Topbar() {
   const pathname = usePathname();
   const breadcrumbs = [{ label: "Home", href: "/" }, { label: getPageLabel(pathname) }];
+  const backendOnline = useBackendStatus();
 
   return (
     <header className="flex h-16 shrink-0 items-center justify-between border-b border-gray-200 bg-white px-6">
@@ -54,6 +72,19 @@ export function Topbar() {
             className="w-64 rounded-lg border border-gray-200 bg-gray-50 py-2 pl-9 pr-3 text-sm text-gray-700 placeholder:text-gray-400 focus:border-blue-400 focus:outline-none"
           />
         </div>
+
+        {backendOnline === false && (
+          <span className="hidden items-center gap-1.5 rounded-full bg-red-50 px-2.5 py-1 text-xs font-medium text-red-600 ring-1 ring-red-200 sm:flex">
+            <span className="h-1.5 w-1.5 rounded-full bg-red-500" />
+            Backend offline — run start.sh
+          </span>
+        )}
+        {backendOnline === true && (
+          <span className="hidden items-center gap-1.5 rounded-full bg-green-50 px-2.5 py-1 text-xs font-medium text-green-700 ring-1 ring-green-200 sm:flex">
+            <span className="h-1.5 w-1.5 rounded-full bg-green-500" />
+            Connected
+          </span>
+        )}
 
         <button
           type="button"

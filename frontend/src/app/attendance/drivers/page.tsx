@@ -1,37 +1,65 @@
 "use client";
 
 import { Search } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { DriverAttendanceTable } from "@/components/attendance/DriverAttendanceTable";
-import { initialDriverAttendance, getAttendanceForDate } from "@/lib/attendance-data";
-import { initialDrivers } from "@/lib/driver-data";
+import { driversApi, attendanceApi } from "@/lib/api";
+import type { Driver } from "@/types/driver";
+import type { DriverAttendanceRecord } from "@/types/attendance";
 
 function todayIso(): string {
   return new Date().toISOString().slice(0, 10);
 }
 
+function getAttendanceForDate(
+  records: DriverAttendanceRecord[],
+  driverId: string,
+  date: string
+): DriverAttendanceRecord | undefined {
+  return records.find((r) => r.driverId === driverId && r.date === date);
+}
+
 export default function DriverAttendancePage() {
   const [date, setDate] = useState(todayIso());
   const [search, setSearch] = useState("");
+  const [drivers, setDrivers] = useState<Driver[]>([]);
+  const [records, setRecords] = useState<DriverAttendanceRecord[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    Promise.all([driversApi.list(), attendanceApi.listDrivers()])
+      .then(([d, r]) => {
+        setDrivers(d);
+        setRecords(r);
+      })
+      .finally(() => setLoading(false));
+  }, []);
+
+  // Reload records when date changes
+  useEffect(() => {
+    attendanceApi.listDrivers(date).then(setRecords);
+  }, [date]);
 
   const summary = useMemo(() => {
     const counts = { Present: 0, Absent: 0, "On Leave": 0, "Not Marked": 0 };
-    for (const driver of initialDrivers) {
-      const record = getAttendanceForDate(initialDriverAttendance, driver.id, date);
+    for (const driver of drivers) {
+      const record = getAttendanceForDate(records, driver.id, date);
       const status = record?.status ?? "Not Marked";
-      counts[status] += 1;
+      counts[status as keyof typeof counts] += 1;
     }
     return counts;
-  }, [date]);
+  }, [drivers, records, date]);
 
   const filteredDrivers = useMemo(() => {
     const query = search.trim().toLowerCase();
-    if (!query) return initialDrivers;
-    return initialDrivers.filter((driver) => driver.name.toLowerCase().includes(query));
-  }, [search]);
+    if (!query) return drivers;
+    return drivers.filter((driver) => driver.name.toLowerCase().includes(query));
+  }, [drivers, search]);
+
+  if (loading) return <div className="p-6 text-sm text-gray-500">Loading...</div>;
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="animate-stagger flex flex-col gap-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Driver Attendance</h1>
@@ -83,7 +111,7 @@ export default function DriverAttendancePage() {
         />
       </div>
 
-      <DriverAttendanceTable drivers={filteredDrivers} records={initialDriverAttendance} date={date} />
+      <DriverAttendanceTable drivers={filteredDrivers} records={records} date={date} />
     </div>
   );
 }

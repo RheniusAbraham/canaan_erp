@@ -1,3 +1,5 @@
+export type YesNo = "Yes" | "No";
+
 export type Driver = {
   id: string;
   photoUrl: string | null;
@@ -14,6 +16,14 @@ export type Driver = {
   licenseNumber: string;
   licenseExpiryDate: string;
   licenseFileName: string | null;
+  form11: YesNo | "";
+  esiNumber: string;
+  panNumber: string;
+  agreementSigned: YesNo | "";
+  bankName: string;
+  bankBranchName: string;
+  accountNumber: string;
+  ifscCode: string;
   username: string;
   password: string;
 };

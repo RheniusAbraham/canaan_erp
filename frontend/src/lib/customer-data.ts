@@ -16,6 +16,11 @@ export const initialCustomers: Customer[] = [
     address: "12, Mount Road, Chennai, Tamil Nadu",
     customerType: "Transports",
     status: "ACTIVE",
+    isGta: "No",
+    applicableForEInvoice: "Yes",
+    tdsExemptionApplicable: "No",
+    msmeDeclarationSubmitted: "No",
+    gstExemptedCustomer: "No",
   },
   {
     id: "2",
@@ -28,5 +33,10 @@ export const initialCustomers: Customer[] = [
     address: "45, Marine Drive, Kochi, Kerala",
     customerType: "Shipping",
     status: "ACTIVE",
+    isGta: "Yes",
+    applicableForEInvoice: "Yes",
+    tdsExemptionApplicable: "Yes",
+    msmeDeclarationSubmitted: "No",
+    gstExemptedCustomer: "No",
   },
 ];

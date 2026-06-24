@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { Dialog } from "@/components/ui/Dialog";
 import { Field, inputClass } from "@/components/ui/Field";
 import { CUSTOMER_STATUS_OPTIONS } from "@/lib/customer-data";
-import { CONTAINER_TYPE_OPTIONS } from "@/lib/customer-pricing-data";
+import { CONTAINER_TYPE_OPTIONS, LOAD_TYPE_OPTIONS, WEIGHT_IN_TONS_OPTIONS } from "@/lib/customer-pricing-data";
 import type { Customer } from "@/types/customer";
 import type { CustomerPricing } from "@/types/customer-pricing";
 
@@ -19,10 +19,10 @@ type CustomerPricingFormDialogProps = {
 
 const emptyForm: Omit<CustomerPricing, "id"> = {
   customerId: "",
-  customerOrigin: "",
   customerDestination: "",
   loadType: "",
   containerType: "",
+  weightInTons: "",
   rate: "",
   validFrom: "",
   validTo: "",
@@ -82,7 +82,7 @@ export function CustomerPricingFormDialog({
   return (
     <Dialog open={open} onClose={onClose} title={initialData ? "Edit Customer Pricing" : "Add Customer Pricing"}>
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-        <Field label="Customer Name">
+        <Field label="Customer Name" required>
           <select
             required
             value={form.customerId}
@@ -101,18 +101,7 @@ export function CustomerPricingFormDialog({
         </Field>
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <Field label="Customer Origin">
-            <input
-              type="text"
-              required
-              value={form.customerOrigin}
-              onChange={(e) => update("customerOrigin", e.target.value)}
-              className={inputClass}
-              placeholder="e.g. Chennai, Tamil Nadu"
-            />
-          </Field>
-
-          <Field label="Customer Destination">
+          <Field label="Customer Destination" required>
             <input
               type="text"
               required
@@ -123,22 +112,29 @@ export function CustomerPricingFormDialog({
             />
           </Field>
 
-          <Field label="Load Type">
-            <input
-              type="text"
+          <Field label="Load Type" required>
+            <select
               required
               value={form.loadType}
-              onChange={(e) => update("loadType", e.target.value)}
+              onChange={(e) => update("loadType", e.target.value as CustomerPricing["loadType"])}
               className={inputClass}
-              placeholder="e.g. FCL"
-            />
+            >
+              <option value="" disabled>
+                Select load type
+              </option>
+              {LOAD_TYPE_OPTIONS.map((option) => (
+                <option key={option} value={option}>
+                  {option}
+                </option>
+              ))}
+            </select>
           </Field>
 
-          <Field label="Container Type">
+          <Field label="Container Type" required>
             <select
               required
               value={form.containerType}
-              onChange={(e) => update("containerType", e.target.value)}
+              onChange={(e) => update("containerType", e.target.value as CustomerPricing["containerType"])}
               className={inputClass}
             >
               <option value="" disabled>
@@ -152,7 +148,25 @@ export function CustomerPricingFormDialog({
             </select>
           </Field>
 
-          <Field label="Rate">
+          <Field label="Weight (In tons)" required>
+            <select
+              required
+              value={form.weightInTons}
+              onChange={(e) => update("weightInTons", e.target.value as CustomerPricing["weightInTons"])}
+              className={inputClass}
+            >
+              <option value="" disabled>
+                Select weight range
+              </option>
+              {WEIGHT_IN_TONS_OPTIONS.map((option) => (
+                <option key={option} value={option}>
+                  {option}
+                </option>
+              ))}
+            </select>
+          </Field>
+
+          <Field label="Rate" required>
             <input
               type="text"
               required
@@ -163,7 +177,7 @@ export function CustomerPricingFormDialog({
             />
           </Field>
 
-          <Field label="Valid From">
+          <Field label="Valid From" required>
             <input
               type="date"
               required
@@ -173,7 +187,7 @@ export function CustomerPricingFormDialog({
             />
           </Field>
 
-          <Field label="Valid To">
+          <Field label="Valid Till" required>
             <input
               type="date"
               required
@@ -183,7 +197,7 @@ export function CustomerPricingFormDialog({
             />
           </Field>
 
-          <Field label="Status">
+          <Field label="Status" required>
             <select
               required
               value={isBlacklisted ? "BLACKLISTED" : form.status}
@@ -212,13 +226,13 @@ export function CustomerPricingFormDialog({
           <button
             type="button"
             onClick={onClose}
-            className="rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+            className="btn-interactive rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-700 transition-all duration-200 hover:bg-gray-50 active:scale-95"
           >
             Cancel
           </button>
           <button
             type="submit"
-            className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+            className="btn-interactive rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-all duration-200 hover:bg-blue-700 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {initialData ? "Save Changes" : "Add Pricing"}
           </button>

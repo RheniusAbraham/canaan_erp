@@ -10,7 +10,6 @@ export type TyreInventoryItem = {
   range: string;
   cost: string;
   condition: TyreCondition | "";
-  flaggedForRetreading: boolean;
   purchaseDate: string;
   repairCost: string;
   retreadCost: string;

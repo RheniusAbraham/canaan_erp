@@ -1,10 +1,11 @@
 "use client";
 
 import { Search } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { cn } from "@/lib/utils";
 import { LeaveApprovalTable } from "@/components/attendance/LeaveApprovalTable";
-import { LEAVE_CATEGORIES, initialLeaveRequests } from "@/lib/leave-request-data";
+import { attendanceApi } from "@/lib/api";
+import { LEAVE_CATEGORIES } from "@/lib/leave-request-data";
 import type { LeaveApplicantCategory, LeaveRequest } from "@/types/leave-request";
 
 const categoryLabels: Record<LeaveApplicantCategory, string> = {
@@ -17,9 +18,14 @@ const categoryLabels: Record<LeaveApplicantCategory, string> = {
 type FilterValue = "All" | LeaveApplicantCategory;
 
 export default function LeaveApprovalsPage() {
-  const [requests, setRequests] = useState<LeaveRequest[]>(initialLeaveRequests);
+  const [requests, setRequests] = useState<LeaveRequest[]>([]);
+  const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<FilterValue>("All");
   const [search, setSearch] = useState("");
+
+  useEffect(() => {
+    attendanceApi.listLeaveRequests().then(setRequests).finally(() => setLoading(false));
+  }, []);
 
   const summary = useMemo(() => {
     const counts = { Pending: 0, Approved: 0, Rejected: 0 };
@@ -57,20 +63,24 @@ export default function LeaveApprovalsPage() {
     return counts;
   }, [requests]);
 
-  function handleApprove(id: string) {
+  async function handleApprove(id: string) {
+    const updated = await attendanceApi.approveLeave(id);
     setRequests((prev) =>
-      prev.map((request) => (request.id === id ? { ...request, status: "Approved" } : request))
+      prev.map((request) => (request.id === id ? updated : request))
     );
   }
 
-  function handleReject(id: string) {
+  async function handleReject(id: string) {
+    const updated = await attendanceApi.rejectLeave(id);
     setRequests((prev) =>
-      prev.map((request) => (request.id === id ? { ...request, status: "Rejected" } : request))
+      prev.map((request) => (request.id === id ? updated : request))
     );
   }
+
+  if (loading) return <div className="p-6 text-sm text-gray-500">Loading...</div>;
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="animate-stagger flex flex-col gap-6">
       <div>
         <h1 className="text-2xl font-bold text-gray-900">Leave Approvals</h1>
         <p className="mt-1 text-sm text-gray-500">

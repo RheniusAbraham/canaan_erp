@@ -1,44 +1,99 @@
 "use client";
 
-import { useState } from "react";
-import { useTripWorkflow } from "@/context/TripWorkflowContext";
+import { useEffect, useState } from "react";
+import { tripsApi, driversApi, trucksApi, customersApi } from "@/lib/api";
 import { TripSheetDialog } from "@/components/trips/TripSheetDialog";
-import { initialDrivers } from "@/lib/driver-data";
-import { initialTrucks } from "@/lib/truck-data";
-import { initialCustomers } from "@/lib/customer-data";
-import { initialTrips } from "@/lib/trip-data";
 import type { Trip } from "@/types/trip";
+import type { Driver } from "@/types/driver";
+import type { Truck } from "@/types/truck";
+import type { Customer } from "@/types/customer";
 import type { TripSheetData } from "@/types/trip-sheet";
+import type { TripClosureData } from "@/types/trip-closure";
 import { n } from "@/types/trip-sheet";
 
 type DialogMode = "add" | "view" | "edit";
 
 export default function TripReconciliationPage() {
-  const { closures, sheets, addSheet } = useTripWorkflow();
+  const [trips, setTrips] = useState<Trip[]>([]);
+  const [drivers, setDrivers] = useState<Driver[]>([]);
+  const [trucks, setTrucks] = useState<Truck[]>([]);
+  const [customers, setCustomers] = useState<Customer[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  // Local cache: tripId -> closure data and sheet data
+  const [closures, setClosures] = useState<Map<string, TripClosureData>>(new Map());
+  const [sheets, setSheets] = useState<Map<string, TripSheetData>>(new Map());
+
   const [selectedTrip, setSelectedTrip] = useState<Trip | null>(null);
   const [dialogMode, setDialogMode] = useState<DialogMode>("add");
 
-  const driverById = new Map(initialDrivers.map((d) => [d.driverId, d]));
-  const truckById  = new Map(initialTrucks.map((t) => [t.truckId, t]));
-  const customerById = new Map(initialCustomers.map((c) => [c.id, c]));
+  useEffect(() => {
+    Promise.all([
+      tripsApi.list("Completed"),
+      driversApi.list(),
+      trucksApi.list(),
+      customersApi.list(),
+    ])
+      .then(([t, d, tr, c]) => {
+        setDrivers(d);
+        setTrucks(tr);
+        setCustomers(c);
+        // Only trips that have a closure
+        const closedTrips = t.filter((trip) => (trip as any).hasClosure === true);
+        setTrips(closedTrips);
+        // Fetch closures for each closed trip
+        return Promise.all(
+          closedTrips.map((trip) =>
+            tripsApi.getClosure(trip.id).then((closure) => ({ tripId: trip.id, closure })).catch(() => null)
+          )
+        );
+      })
+      .then((closureResults) => {
+        const closureMap = new Map<string, TripClosureData>();
+        for (const result of closureResults) {
+          if (result) closureMap.set(result.tripId, result.closure);
+        }
+        setClosures(closureMap);
+        // Fetch sheets for trips that have a sheet
+        return Promise.all(
+          [...closureMap.keys()].map((tripId) =>
+            tripsApi.getSheet(tripId).then((sheet) => ({ tripId, sheet })).catch(() => null)
+          )
+        );
+      })
+      .then((sheetResults) => {
+        const sheetMap = new Map<string, TripSheetData>();
+        for (const result of sheetResults) {
+          if (result) sheetMap.set(result.tripId, result.sheet);
+        }
+        setSheets(sheetMap);
+      })
+      .finally(() => setLoading(false));
+  }, []);
 
-  const closedTrips = initialTrips.filter((t) => closures.has(t.id));
+  const driverById = new Map(drivers.map((d) => [d.driverId, d]));
+  const truckById = new Map(trucks.map((t) => [t.truckId, t]));
+  const customerById = new Map(customers.map((c) => [c.id, c]));
 
   function openDialog(trip: Trip, mode: DialogMode) {
     setSelectedTrip(trip);
     setDialogMode(mode);
   }
 
-  function handleSubmitSheet(data: TripSheetData) {
-    addSheet(data);
+  async function handleSubmitSheet(data: TripSheetData) {
+    if (!selectedTrip) return;
+    const saved = await tripsApi.upsertSheet(selectedTrip.id, data);
+    setSheets((prev) => new Map([...prev, [selectedTrip.id, saved]]));
     setSelectedTrip(null);
   }
 
   const fmt = (v: number) =>
     `₹${v.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
+  if (loading) return <div className="p-6 text-sm text-gray-500">Loading...</div>;
+
   return (
-    <div className="flex flex-col gap-6">
+    <div className="animate-stagger flex flex-col gap-6">
       <div>
         <h1 className="text-2xl font-bold text-gray-900">Trip Reconciliation</h1>
         <p className="mt-1 text-sm text-gray-500">
@@ -46,7 +101,7 @@ export default function TripReconciliationPage() {
         </p>
       </div>
 
-      {closedTrips.length === 0 ? (
+      {trips.length === 0 ? (
         <div className="rounded-xl border border-gray-200 bg-white p-10 text-center text-sm text-gray-500">
           No closed trips yet. Close a completed trip first from the{" "}
           <a href="/trips/completed" className="text-blue-600 underline">Completed Trips</a> page.
@@ -65,11 +120,11 @@ export default function TripReconciliationPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
-              {closedTrips.map((trip) => {
-                const closure  = closures.get(trip.id);
-                const sheet    = sheets.get(trip.id);
-                const driver   = driverById.get(trip.driverId);
-                const truck    = truckById.get(trip.vehicleId);
+              {trips.map((trip) => {
+                const closure = closures.get(trip.id);
+                const sheet = sheets.get(trip.id);
+                const driver = driverById.get(trip.driverId);
+                const truck = truckById.get(trip.vehicleId);
                 const customer = customerById.get(trip.customerId);
 
                 return (

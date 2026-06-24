@@ -8,10 +8,12 @@ import { Avatar } from "@/components/ui/Avatar";
 import { DEPARTMENT_OPTIONS, SOFTWARE_DESIGNATION_OPTIONS } from "@/lib/staff-data";
 import type { Staff } from "@/types/staff";
 
+export type StaffFiles = { photo?: File | null; aadhar?: File | null };
+
 type StaffFormDialogProps = {
   open: boolean;
   onClose: () => void;
-  onSave: (staff: Staff) => void;
+  onSave: (staff: Staff, files: StaffFiles) => void;
   initialData: Staff | null;
 };
 
@@ -35,12 +37,14 @@ const emptyForm: Omit<Staff, "id"> = {
 
 export function StaffFormDialog({ open, onClose, onSave, initialData }: StaffFormDialogProps) {
   const [form, setForm] = useState<Omit<Staff, "id">>(emptyForm);
+  const [files, setFiles] = useState<StaffFiles>({});
   const lastAutoUsername = useRef<string>("");
 
   useEffect(() => {
     if (open) {
       const { id: _id, ...rest } = initialData ?? { id: "", ...emptyForm };
       setForm(rest);
+      setFiles({});
       lastAutoUsername.current = rest.username;
     }
   }, [open, initialData]);
@@ -61,12 +65,16 @@ export function StaffFormDialog({ open, onClose, onSave, initialData }: StaffFor
     });
   }
 
+  function resetUsernameToEmail() {
+    lastAutoUsername.current = form.email;
+    update("username", form.email);
+  }
+
+  const usernameIsSynced = form.username === form.email && form.email !== "";
+
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    onSave({
-      id: initialData?.id ?? crypto.randomUUID(),
-      ...form,
-    });
+    onSave({ id: initialData?.id ?? crypto.randomUUID(), ...form }, files);
   }
 
   return (
@@ -76,7 +84,7 @@ export function StaffFormDialog({ open, onClose, onSave, initialData }: StaffFor
       title={initialData ? "Edit Staff" : "Add Staff"}
     >
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-        <Field label="Staff's Photo">
+        <Field label="Staff's Photo" required>
           <div className="flex items-center gap-4">
             <Avatar photoUrl={form.photoUrl} label={form.name || form.staffId || "?"} size={56} />
             <input
@@ -85,6 +93,7 @@ export function StaffFormDialog({ open, onClose, onSave, initialData }: StaffFor
               onChange={(e) => {
                 const file = e.target.files?.[0];
                 if (!file) return;
+                setFiles((prev) => ({ ...prev, photo: file }));
                 const reader = new FileReader();
                 reader.onload = () => update("photoUrl", reader.result as string);
                 reader.readAsDataURL(file);
@@ -95,7 +104,7 @@ export function StaffFormDialog({ open, onClose, onSave, initialData }: StaffFor
         </Field>
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <Field label="Staff's Name">
+          <Field label="Staff's Name" required>
             <input
               type="text"
               required
@@ -106,7 +115,7 @@ export function StaffFormDialog({ open, onClose, onSave, initialData }: StaffFor
             />
           </Field>
 
-          <Field label="Staff ID">
+          <Field label="Staff ID" required>
             <input
               type="text"
               required
@@ -117,7 +126,7 @@ export function StaffFormDialog({ open, onClose, onSave, initialData }: StaffFor
             />
           </Field>
 
-          <Field label="Department">
+          <Field label="Department" required>
             <input
               type="text"
               required
@@ -134,7 +143,7 @@ export function StaffFormDialog({ open, onClose, onSave, initialData }: StaffFor
             </datalist>
           </Field>
 
-          <Field label="Designation">
+          <Field label="Designation" required>
             <input
               type="text"
               required
@@ -145,7 +154,7 @@ export function StaffFormDialog({ open, onClose, onSave, initialData }: StaffFor
             />
           </Field>
 
-          <Field label="Branch">
+          <Field label="Branch" required>
             <input
               type="text"
               required
@@ -156,7 +165,7 @@ export function StaffFormDialog({ open, onClose, onSave, initialData }: StaffFor
             />
           </Field>
 
-          <Field label="Date of Birth">
+          <Field label="Date of Birth" required>
             <input
               type="date"
               required
@@ -166,7 +175,7 @@ export function StaffFormDialog({ open, onClose, onSave, initialData }: StaffFor
             />
           </Field>
 
-          <Field label="Date of Joining">
+          <Field label="Date of Joining" required>
             <input
               type="date"
               required
@@ -176,7 +185,7 @@ export function StaffFormDialog({ open, onClose, onSave, initialData }: StaffFor
             />
           </Field>
 
-          <Field label="Email">
+          <Field label="Email" required>
             <input
               type="email"
               required
@@ -187,7 +196,7 @@ export function StaffFormDialog({ open, onClose, onSave, initialData }: StaffFor
             />
           </Field>
 
-          <Field label="Contact Number">
+          <Field label="Contact Number" required>
             <input
               type="tel"
               required
@@ -198,7 +207,7 @@ export function StaffFormDialog({ open, onClose, onSave, initialData }: StaffFor
             />
           </Field>
 
-          <Field label="Software Designation">
+          <Field label="Software Designation" required>
             <select
               required
               value={form.softwareDesignation}
@@ -220,18 +229,32 @@ export function StaffFormDialog({ open, onClose, onSave, initialData }: StaffFor
         <div className="rounded-lg border border-gray-200 p-4">
           <h3 className="mb-3 text-sm font-semibold text-gray-900">Software Credentials</h3>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Field label="Username">
+            <Field label="Username" required>
               <input
                 type="text"
                 required
                 value={form.username}
-                onChange={(e) => update("username", e.target.value)}
+                onChange={(e) => {
+                  lastAutoUsername.current = "";
+                  update("username", e.target.value);
+                }}
                 className={inputClass}
                 placeholder="Auto-filled from email"
               />
+              {usernameIsSynced ? (
+                <p className="mt-1 text-xs text-green-600">&#10003; Synced with email</p>
+              ) : form.email ? (
+                <button
+                  type="button"
+                  onClick={resetUsernameToEmail}
+                  className="mt-1 text-xs text-blue-600 underline hover:text-blue-800"
+                >
+                  Reset to email
+                </button>
+              ) : null}
             </Field>
 
-            <Field label="Password">
+            <Field label="Password" required>
               <input
                 type="password"
                 required
@@ -244,7 +267,7 @@ export function StaffFormDialog({ open, onClose, onSave, initialData }: StaffFor
           </div>
         </div>
 
-        <Field label="Address">
+        <Field label="Address" required>
           <textarea
             required
             value={form.address}
@@ -254,13 +277,15 @@ export function StaffFormDialog({ open, onClose, onSave, initialData }: StaffFor
           />
         </Field>
 
-        <Field label="Aadhar Card (PDF)">
+        <Field label="Aadhar Card (PDF)" required>
           <input
             type="file"
-            accept="application/pdf"
+            accept="application/pdf,image/*"
             onChange={(e) => {
               const file = e.target.files?.[0];
-              if (file) update("aadharFileName", file.name);
+              if (!file) return;
+              setFiles((prev) => ({ ...prev, aadhar: file }));
+              update("aadharFileName", file.name);
             }}
             className="text-sm text-gray-600 file:mr-3 file:rounded-lg file:border-0 file:bg-blue-50 file:px-3 file:py-2 file:text-sm file:font-medium file:text-blue-600 hover:file:bg-blue-100"
           />
@@ -276,13 +301,13 @@ export function StaffFormDialog({ open, onClose, onSave, initialData }: StaffFor
           <button
             type="button"
             onClick={onClose}
-            className="rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+            className="btn-interactive rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-700 transition-all duration-200 hover:bg-gray-50 active:scale-95"
           >
             Cancel
           </button>
           <button
             type="submit"
-            className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+            className="btn-interactive rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-all duration-200 hover:bg-blue-700 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {initialData ? "Save Changes" : "Add Staff"}
           </button>

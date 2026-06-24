@@ -27,8 +27,6 @@ export function TyreHistoryDialog({ open, onClose, tyre, records }: TyreHistoryD
         <ul className="flex flex-col gap-3">
           {tyreRecords.map((record) => {
             const truck = initialTrucks.find((t) => t.id === record.truckId);
-            const mileage =
-              record.removedOdometer !== null ? record.removedOdometer - record.fittedOdometer : null;
 
             return (
               <li key={record.id} className="rounded-lg border border-gray-200 p-3">
@@ -52,7 +50,6 @@ export function TyreHistoryDialog({ open, onClose, tyre, records }: TyreHistoryD
                 {record.removedOdometer !== null ? (
                   <p className="mt-1 text-xs text-gray-600">
                     Removed at {record.removedOdometer.toLocaleString()} km on {record.removedDate}
-                    {mileage !== null && ` — ${mileage.toLocaleString()} km run`}
                   </p>
                 ) : (
                   <p className="mt-1 text-xs text-gray-600">Still in service on this truck</p>

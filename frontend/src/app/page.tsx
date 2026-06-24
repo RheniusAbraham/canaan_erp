@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Truck,
   Navigation,
@@ -17,34 +17,35 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { StatCard } from "@/components/dashboard/StatCard";
-import { initialTrucks } from "@/lib/truck-data";
-import { initialDrivers } from "@/lib/driver-data";
-import { initialStaff } from "@/lib/staff-data";
-import { initialCustomers } from "@/lib/customer-data";
-import { initialVendors } from "@/lib/vendor-data";
-import { initialTrips } from "@/lib/trip-data";
-import { initialLeaveRequests, LEAVE_CATEGORIES } from "@/lib/leave-request-data";
-import { initialTyreInventory } from "@/lib/tyre-inventory-data";
 import {
-  initialMaintenanceRecords,
+  trucksApi,
+  driversApi,
+  staffApi,
+  customersApi,
+  vendorsApi,
+  tripsApi,
+  attendanceApi,
+  maintenanceApi,
+  tyreApi,
+  financeApi,
+} from "@/lib/api";
+import {
   getMaintenanceStatus,
   getTruckMaintenanceSummary,
 } from "@/lib/truck-maintenance-data";
 import { getComplianceStatus } from "@/lib/compliance";
-import { initialEmiRecords, initialRecurringPayments } from "@/lib/finance-data";
-import {
-  initialDriverTransactions,
-  initialStaffTransactions,
-  driverStatuses,
-  staffStatuses,
-} from "@/lib/compensation-data";
-import {
-  initialDriverAttendance,
-  initialStaffAttendance,
-  getAttendanceForDate,
-  getStaffAttendanceForDate,
-} from "@/lib/attendance-data";
-import type { TripStatus } from "@/types/trip";
+import type { Truck as TruckType } from "@/types/truck";
+import type { Driver } from "@/types/driver";
+import type { Staff } from "@/types/staff";
+import type { Customer } from "@/types/customer";
+import type { Vendor } from "@/types/vendor";
+import type { Trip, TripStatus } from "@/types/trip";
+import type { DriverAttendanceRecord, StaffAttendanceRecord } from "@/types/attendance";
+import type { LeaveRequest } from "@/types/leave-request";
+import type { MaintenanceRecord } from "@/types/truck-maintenance";
+import type { TyreInventoryItem } from "@/types/tyre-inventory";
+import type { EmiRecord, RecurringPayment } from "@/types/finance";
+import type { CompensationTransaction } from "@/types/compensation";
 
 const TABS = ["Overview", "Fleet & Trips", "Attendance & HR", "Maintenance", "Finance"] as const;
 type Tab = (typeof TABS)[number];
@@ -91,23 +92,73 @@ const COMPLIANCE_BADGE: Record<string, string> = {
 
 export default function DashboardPage() {
   const [activeTab, setActiveTab] = useState<Tab>("Overview");
+  const [loading, setLoading] = useState(true);
+
+  const [trucks, setTrucks] = useState<TruckType[]>([]);
+  const [drivers, setDrivers] = useState<Driver[]>([]);
+  const [staffList, setStaffList] = useState<Staff[]>([]);
+  const [customers, setCustomers] = useState<Customer[]>([]);
+  const [vendors, setVendors] = useState<Vendor[]>([]);
+  const [trips, setTrips] = useState<Trip[]>([]);
+  const [driverAttendance, setDriverAttendance] = useState<DriverAttendanceRecord[]>([]);
+  const [staffAttendance, setStaffAttendance] = useState<StaffAttendanceRecord[]>([]);
+  const [leaveRequests, setLeaveRequests] = useState<LeaveRequest[]>([]);
+  const [maintenanceRecords, setMaintenanceRecords] = useState<MaintenanceRecord[]>([]);
+  const [tyreInventory, setTyreInventory] = useState<TyreInventoryItem[]>([]);
+  const [emiRecords, setEmiRecords] = useState<EmiRecord[]>([]);
+  const [recurringPayments, setRecurringPayments] = useState<RecurringPayment[]>([]);
+  const [driverTransactions, setDriverTransactions] = useState<CompensationTransaction[]>([]);
+  const [staffTransactions, setStaffTransactions] = useState<CompensationTransaction[]>([]);
+
   const today = todayIso();
+
+  useEffect(() => {
+    Promise.all([
+      trucksApi.list(),
+      driversApi.list(),
+      staffApi.list(),
+      customersApi.list(),
+      vendorsApi.list(),
+      tripsApi.list(),
+      attendanceApi.listDrivers(today),
+      attendanceApi.listStaff(today),
+      attendanceApi.listLeaveRequests(),
+      maintenanceApi.listRecords(),
+      tyreApi.listInventory(),
+      financeApi.listEmi(),
+      financeApi.listRecurring(),
+      financeApi.listDriverCompensation(),
+      financeApi.listStaffCompensation(),
+    ])
+      .then(([t, d, s, c, v, tr, da, sa, lr, mr, ti, emi, rp, dtx, stx]) => {
+        setTrucks(t);
+        setDrivers(d);
+        setStaffList(s);
+        setCustomers(c);
+        setVendors(v);
+        setTrips(tr);
+        setDriverAttendance(da);
+        setStaffAttendance(sa);
+        setLeaveRequests(lr);
+        setMaintenanceRecords(mr);
+        setTyreInventory(ti);
+        setEmiRecords(emi);
+        setRecurringPayments(rp);
+        setDriverTransactions(dtx);
+        setStaffTransactions(stx);
+      })
+      .finally(() => setLoading(false));
+  }, [today]);
 
   const truckSummaries = useMemo(
     () =>
-      initialTrucks.map((truck) => ({
+      trucks.map((truck) => ({
         truck,
-        summary: getTruckMaintenanceSummary(truck, initialMaintenanceRecords),
-        status: getMaintenanceStatus(truck, initialMaintenanceRecords),
+        summary: getTruckMaintenanceSummary(truck, maintenanceRecords),
+        status: getMaintenanceStatus(truck, maintenanceRecords),
       })),
-    []
+    [trucks, maintenanceRecords]
   );
-
-  const avgHealthScore = useMemo(() => {
-    if (truckSummaries.length === 0) return 0;
-    const total = truckSummaries.reduce((sum, item) => sum + item.summary.reliabilityScore, 0);
-    return Math.round(total / truckSummaries.length);
-  }, [truckSummaries]);
 
   const maintenanceItems = useMemo(
     () =>
@@ -130,65 +181,58 @@ export default function DashboardPage() {
 
   const complianceCounts = useMemo(() => {
     const counts: Record<string, number> = { Valid: 0, "Expiring Soon": 0, Expired: 0 };
-    for (const truck of initialTrucks) {
+    for (const truck of trucks) {
       const dates = [truck.fcExpiryDate, truck.roadTaxDate, truck.nationalPermitDate, truck.pollutionCertificateDate];
       for (const date of dates) counts[getComplianceStatus(date)] += 1;
     }
     return counts;
-  }, []);
+  }, [trucks]);
 
   const tripStatusCounts = useMemo(() => {
     const counts: Record<TripStatus, number> = {
-      Assigned: 0,
-      Started: 0,
-      Loaded: 0,
-      "On-Transit": 0,
-      Reached: 0,
-      Unloaded: 0,
-      Completed: 0,
-      Cancelled: 0,
+      Assigned: 0, Started: 0, Loaded: 0, "On-Transit": 0,
+      Reached: 0, Unloaded: 0, Completed: 0, Cancelled: 0,
     };
-    for (const trip of initialTrips) counts[trip.status] += 1;
+    for (const trip of trips) counts[trip.status] += 1;
     return counts;
-  }, []);
+  }, [trips]);
 
   const activeTripsCount = useMemo(
-    () => initialTrips.filter((trip) => ACTIVE_TRIP_STATUSES.includes(trip.status)).length,
-    []
+    () => trips.filter((trip) => ACTIVE_TRIP_STATUSES.includes(trip.status)).length,
+    [trips]
   );
 
   const driverAttendanceToday = useMemo(() => {
     const counts = { Present: 0, Absent: 0, "On Leave": 0, "Not Marked": 0 };
-    for (const driver of initialDrivers) {
-      const record = getAttendanceForDate(initialDriverAttendance, driver.id, today);
-      counts[record?.status ?? "Not Marked"] += 1;
+    for (const driver of drivers) {
+      const record = driverAttendance.find((r) => r.driverId === driver.id && r.date === today);
+      counts[(record?.status ?? "Not Marked") as keyof typeof counts] += 1;
     }
     return counts;
-  }, [today]);
+  }, [drivers, driverAttendance, today]);
 
   const staffAttendanceToday = useMemo(() => {
     const counts = { Present: 0, Absent: 0, "On Leave": 0, "Not Marked": 0 };
-    for (const member of initialStaff) {
-      const record = getStaffAttendanceForDate(initialStaffAttendance, member.id, today);
-      counts[record?.status ?? "Not Marked"] += 1;
+    for (const member of staffList) {
+      const record = staffAttendance.find((r) => r.staffId === member.id && r.date === today);
+      counts[(record?.status ?? "Not Marked") as keyof typeof counts] += 1;
     }
     return counts;
-  }, [today]);
+  }, [staffList, staffAttendance, today]);
 
   const leaveSummary = useMemo(() => {
     const counts = { Pending: 0, Approved: 0, Rejected: 0 };
-    for (const request of initialLeaveRequests) counts[request.status] += 1;
+    for (const request of leaveRequests) counts[request.status] += 1;
     return counts;
-  }, []);
+  }, [leaveRequests]);
 
   const pendingLeaveRequests = useMemo(
-    () => initialLeaveRequests.filter((request) => request.status === "Pending"),
-    []
+    () => leaveRequests.filter((request) => request.status === "Pending"),
+    [leaveRequests]
   );
 
   const pendingLeaveByCategory = useMemo(() => {
     const counts: Record<string, number> = {};
-    for (const category of LEAVE_CATEGORIES) counts[category] = 0;
     for (const request of pendingLeaveRequests) {
       counts[request.category] = (counts[request.category] ?? 0) + 1;
     }
@@ -196,13 +240,13 @@ export default function DashboardPage() {
   }, [pendingLeaveRequests]);
 
   const monthlyEmiTotal = useMemo(
-    () => initialEmiRecords.reduce((sum, emi) => sum + (Number(emi.emiAmount) || 0), 0),
-    []
+    () => emiRecords.reduce((sum, emi) => sum + (Number(emi.emiAmount) || 0), 0),
+    [emiRecords]
   );
 
   const activeRecurringPayments = useMemo(
-    () => initialRecurringPayments.filter((payment) => payment.status === "Active"),
-    []
+    () => recurringPayments.filter((payment) => payment.status === "Active"),
+    [recurringPayments]
   );
 
   const monthlyRecurringTotal = useMemo(
@@ -216,42 +260,26 @@ export default function DashboardPage() {
 
   const driverCompTotals = useMemo(() => {
     const totals = { Salary: 0, Advance: 0 };
-    for (const tx of initialDriverTransactions) totals[tx.type] += tx.amount;
+    for (const tx of driverTransactions) totals[tx.type as keyof typeof totals] += tx.amount;
     return totals;
-  }, []);
+  }, [driverTransactions]);
 
   const staffCompTotals = useMemo(() => {
     const totals = { Salary: 0, Advance: 0 };
-    for (const tx of initialStaffTransactions) totals[tx.type] += tx.amount;
+    for (const tx of staffTransactions) totals[tx.type as keyof typeof totals] += tx.amount;
     return totals;
-  }, []);
-
-  const driverStatusCounts = useMemo(() => {
-    const counts: Record<string, number> = {};
-    for (const driver of initialDrivers) {
-      const status = driverStatuses[driver.id] ?? "Non-Active";
-      counts[status] = (counts[status] ?? 0) + 1;
-    }
-    return counts;
-  }, []);
-
-  const staffStatusCounts = useMemo(() => {
-    const counts: Record<string, number> = {};
-    for (const member of initialStaff) {
-      const status = staffStatuses[member.id] ?? "Non-Active";
-      counts[status] = (counts[status] ?? 0) + 1;
-    }
-    return counts;
-  }, []);
+  }, [staffTransactions]);
 
   const totalAlerts = complianceCounts.Expired + complianceCounts["Expiring Soon"] + maintenanceCounts.attention;
-  const activeCustomers = initialCustomers.filter((customer) => customer.status === "ACTIVE").length;
-  const activeVendors = initialVendors.filter((vendor) => vendor.status === "ACTIVE").length;
-  const tyreInventoryValue = initialTyreInventory.reduce((sum, tyre) => sum + (Number(tyre.cost) || 0), 0);
+  const activeCustomers = customers.filter((customer) => customer.status === "ACTIVE").length;
+  const activeVendors = vendors.filter((vendor) => vendor.status === "ACTIVE").length;
+  const tyreInventoryValue = tyreInventory.reduce((sum, tyre) => sum + (Number(tyre.cost) || 0), 0);
   const totalCompensationPaid = driverCompTotals.Salary + staffCompTotals.Salary;
 
+  if (loading) return <div className="p-6 text-sm text-gray-500">Loading...</div>;
+
   return (
-    <div className="flex flex-col gap-6">
+    <div className="animate-stagger flex flex-col gap-6">
       <div>
         <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
         <p className="mt-1 text-sm text-gray-500">
@@ -278,63 +306,79 @@ export default function DashboardPage() {
       </div>
 
       {activeTab === "Overview" && (
-        <div className="flex flex-col gap-6">
+        <div className="animate-stagger flex flex-col gap-6">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <StatCard
-              label="Total Vehicles"
-              value={String(initialTrucks.length)}
-              caption={`Avg health score ${avgHealthScore}/100`}
-              icon={Truck}
-            />
-            <StatCard
-              label="Active Trips"
-              value={String(activeTripsCount)}
-              caption={`${initialTrips.length} total trips`}
-              icon={Navigation}
-            />
-            <StatCard
-              label="Workforce"
-              value={String(initialDrivers.length + initialStaff.length)}
-              caption={`${initialDrivers.length} drivers, ${initialStaff.length} staff`}
-              icon={Users}
-            />
-            <StatCard
-              label="Active Alerts"
-              value={String(totalAlerts)}
-              caption={`${complianceCounts.Expired} expired docs, ${maintenanceCounts.attention} maintenance`}
-              icon={AlertTriangle}
-            />
-            <StatCard
-              label="Pending Leave Requests"
-              value={String(leaveSummary.Pending)}
-              caption={`${leaveSummary.Approved} approved, ${leaveSummary.Rejected} rejected`}
-              icon={ClipboardList}
-            />
-            <StatCard
-              label="Business Partners"
-              value={String(initialCustomers.length + initialVendors.length)}
-              caption={`${activeCustomers} active customers, ${activeVendors} active vendors`}
-              icon={Building2}
-            />
-            <StatCard
-              label="Monthly Recurring Spend"
-              value={formatCurrency(monthlyRecurringTotal)}
-              caption={`${activeRecurringPayments.length} of ${initialRecurringPayments.length} payments active`}
-              icon={Wallet}
-            />
-            <StatCard
-              label="Compensation Paid"
-              value={formatCurrency(totalCompensationPaid)}
-              caption="Driver + staff salaries (latest cycle)"
-              icon={CreditCard}
-            />
+            <div>
+              <StatCard
+                label="Total Vehicles"
+                value={String(trucks.length)}
+                caption="Active fleet vehicles"
+                icon={Truck}
+              />
+            </div>
+            <div>
+              <StatCard
+                label="Active Trips"
+                value={String(activeTripsCount)}
+                caption={`${trips.length} total trips`}
+                icon={Navigation}
+              />
+            </div>
+            <div>
+              <StatCard
+                label="Workforce"
+                value={String(drivers.length + staffList.length)}
+                caption={`${drivers.length} drivers, ${staffList.length} staff`}
+                icon={Users}
+              />
+            </div>
+            <div>
+              <StatCard
+                label="Active Alerts"
+                value={String(totalAlerts)}
+                caption={`${complianceCounts.Expired} expired docs, ${maintenanceCounts.attention} maintenance`}
+                icon={AlertTriangle}
+              />
+            </div>
+            <div>
+              <StatCard
+                label="Pending Leave Requests"
+                value={String(leaveSummary.Pending)}
+                caption={`${leaveSummary.Approved} approved, ${leaveSummary.Rejected} rejected`}
+                icon={ClipboardList}
+              />
+            </div>
+            <div>
+              <StatCard
+                label="Business Partners"
+                value={String(customers.length + vendors.length)}
+                caption={`${activeCustomers} active customers, ${activeVendors} active vendors`}
+                icon={Building2}
+              />
+            </div>
+            <div>
+              <StatCard
+                label="Monthly Recurring Spend"
+                value={formatCurrency(monthlyRecurringTotal)}
+                caption={`${activeRecurringPayments.length} of ${recurringPayments.length} payments active`}
+                icon={Wallet}
+              />
+            </div>
+            <div>
+              <StatCard
+                label="Compensation Paid"
+                value={formatCurrency(totalCompensationPaid)}
+                caption="Driver + staff salaries (latest cycle)"
+                icon={CreditCard}
+              />
+            </div>
           </div>
 
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
             <div className="rounded-xl border border-gray-200 bg-white p-5">
               <h2 className="text-base font-bold text-gray-900">Recent Trips</h2>
               <div className="mt-3 flex flex-col gap-3">
-                {initialTrips.map((trip) => (
+                {trips.map((trip, index) => (
                   <div key={trip.id} className="flex items-center justify-between gap-3 rounded-lg border border-gray-100 p-3">
                     <div>
                       <p className="text-sm font-semibold text-gray-900">{trip.tripId}</p>
@@ -356,7 +400,7 @@ export default function DashboardPage() {
                 {pendingLeaveRequests.length === 0 && (
                   <p className="text-sm text-gray-500">No pending leave requests.</p>
                 )}
-                {pendingLeaveRequests.map((request) => (
+                {pendingLeaveRequests.map((request, index) => (
                   <div key={request.id} className="flex items-center justify-between gap-3 rounded-lg border border-gray-100 p-3">
                     <div>
                       <p className="text-sm font-semibold text-gray-900">{request.applicantName}</p>
@@ -376,18 +420,18 @@ export default function DashboardPage() {
       )}
 
       {activeTab === "Fleet & Trips" && (
-        <div className="flex flex-col gap-6">
+        <div className="animate-stagger flex flex-col gap-6">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <StatCard
               label="Total Vehicles"
-              value={String(initialTrucks.length)}
-              caption={initialTrucks.map((truck) => truck.registrationNumber).join(", ")}
+              value={String(trucks.length)}
+              caption={trucks.map((truck) => truck.registrationNumber).join(", ")}
               icon={Truck}
             />
             <StatCard
               label="Active Trips"
               value={String(activeTripsCount)}
-              caption={`Out of ${initialTrips.length} total trips`}
+              caption={`Out of ${trips.length} total trips`}
               icon={Navigation}
             />
             <StatCard
@@ -396,12 +440,7 @@ export default function DashboardPage() {
               caption={`${tripStatusCounts.Cancelled} cancelled`}
               icon={ClipboardList}
             />
-            <StatCard
-              label="Avg Fleet Health"
-              value={`${avgHealthScore}/100`}
-              caption={truckSummaries.map((item) => item.summary.health).join(", ")}
-              icon={Activity}
-            />
+
           </div>
 
           <div className="rounded-xl border border-gray-200 bg-white p-5">
@@ -434,7 +473,7 @@ export default function DashboardPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
-                {initialTrips.map((trip) => (
+                {trips.map((trip) => (
                   <tr key={trip.id}>
                     <td className="px-4 py-3 font-semibold text-gray-900">{trip.tripId}</td>
                     <td className="px-4 py-3 text-gray-600">{trip.bookingReferenceNo}</td>
@@ -448,7 +487,7 @@ export default function DashboardPage() {
                         {trip.status}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-gray-600">{formatCurrency(Number(trip.transportHireCharge) || 0)}</td>
+                    <td className="px-4 py-3 text-gray-600">{formatCurrency(Number(trip.transportHireAmount) || 0)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -458,24 +497,24 @@ export default function DashboardPage() {
       )}
 
       {activeTab === "Attendance & HR" && (
-        <div className="flex flex-col gap-6">
+        <div className="animate-stagger flex flex-col gap-6">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <StatCard
               label="Total Drivers"
-              value={String(initialDrivers.length)}
-              caption={`${driverStatusCounts["On-Trip"] ?? 0} on-trip`}
+              value={String(drivers.length)}
+              caption="Active fleet drivers"
               icon={Users}
             />
             <StatCard
               label="Total Staff"
-              value={String(initialStaff.length)}
-              caption={`${staffStatusCounts["On-Trip"] ?? 0} on-trip`}
+              value={String(staffList.length)}
+              caption="Across all branches"
               icon={Users}
             />
             <StatCard
               label="Pending Leave Requests"
               value={String(leaveSummary.Pending)}
-              caption={`${pendingLeaveByCategory.Driver ?? 0} drivers, ${pendingLeaveByCategory.Staff ?? 0} staff`}
+              caption={`${pendingLeaveByCategory["Driver"] ?? 0} drivers, ${pendingLeaveByCategory["Staff"] ?? 0} staff`}
               icon={ClipboardList}
             />
             <StatCard
@@ -488,7 +527,7 @@ export default function DashboardPage() {
                   staffAttendanceToday.Absent +
                   staffAttendanceToday["On Leave"]
               )}
-              caption={`Out of ${initialDrivers.length + initialStaff.length} total`}
+              caption={`Out of ${drivers.length + staffList.length} total`}
               icon={Activity}
             />
           </div>
@@ -574,14 +613,9 @@ export default function DashboardPage() {
       )}
 
       {activeTab === "Maintenance" && (
-        <div className="flex flex-col gap-6">
+        <div className="animate-stagger flex flex-col gap-6">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <StatCard
-              label="Fleet Health Score"
-              value={`${avgHealthScore}/100`}
-              caption={truckSummaries.map((item) => item.summary.health).join(", ")}
-              icon={Activity}
-            />
+
             <StatCard
               label="Maintenance Alerts"
               value={String(maintenanceCounts.attention)}
@@ -596,7 +630,7 @@ export default function DashboardPage() {
             />
             <StatCard
               label="Tyre Inventory"
-              value={String(initialTyreInventory.length)}
+              value={String(tyreInventory.length)}
               caption={`Stock value ${formatCurrency(tyreInventoryValue)}`}
               icon={Package}
             />
@@ -668,18 +702,18 @@ export default function DashboardPage() {
       )}
 
       {activeTab === "Finance" && (
-        <div className="flex flex-col gap-6">
+        <div className="animate-stagger flex flex-col gap-6">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <StatCard
               label="Monthly EMI"
               value={formatCurrency(monthlyEmiTotal)}
-              caption={`${initialEmiRecords.length} active loan${initialEmiRecords.length === 1 ? "" : "s"}`}
+              caption={`${emiRecords.length} active loan${emiRecords.length === 1 ? "" : "s"}`}
               icon={CreditCard}
             />
             <StatCard
               label="Recurring Payments"
               value={String(activeRecurringPayments.length)}
-              caption={`Active of ${initialRecurringPayments.length} total`}
+              caption={`Active of ${recurringPayments.length} total`}
               icon={Wallet}
             />
             <StatCard
@@ -708,7 +742,7 @@ export default function DashboardPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
-                {initialEmiRecords.map((emi) => (
+                {emiRecords.map((emi) => (
                   <tr key={emi.id}>
                     <td className="px-4 py-3 font-semibold text-gray-900">{emi.emiName}</td>
                     <td className="px-4 py-3 text-gray-600">{emi.truckRegistration}</td>
@@ -734,7 +768,7 @@ export default function DashboardPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
-                {initialRecurringPayments.map((payment) => (
+                {recurringPayments.map((payment) => (
                   <tr key={payment.id}>
                     <td className="px-4 py-3 font-semibold text-gray-900">{payment.title}</td>
                     <td className="px-4 py-3 text-gray-600">{payment.category}</td>

@@ -28,10 +28,10 @@ export function Dialog({ open, onClose, title, children, className }: DialogProp
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/40" onClick={onClose} />
+      <div className="absolute inset-0 bg-black/40 animate-backdrop-in" onClick={onClose} />
       <div
         className={cn(
-          "relative max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-xl bg-white p-6 shadow-xl",
+          "relative max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-xl bg-white p-6 shadow-xl animate-dialog-enter",
           className
         )}
       >

@@ -56,7 +56,7 @@ export function MaintenanceRecordFormDialog({ open, onClose, onSave, truck }: Ma
     >
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <Field label="Date">
+          <Field label="Date" required>
             <input
               type="date"
               required
@@ -66,7 +66,7 @@ export function MaintenanceRecordFormDialog({ open, onClose, onSave, truck }: Ma
             />
           </Field>
 
-          <Field label="Odometer (km)">
+          <Field label="Odometer (km)" required>
             <input
               type="number"
               required
@@ -78,7 +78,7 @@ export function MaintenanceRecordFormDialog({ open, onClose, onSave, truck }: Ma
             />
           </Field>
 
-          <Field label="Maintenance Type">
+          <Field label="Maintenance Type" required>
             <input
               type="text"
               required
@@ -95,7 +95,7 @@ export function MaintenanceRecordFormDialog({ open, onClose, onSave, truck }: Ma
             </datalist>
           </Field>
 
-          <Field label="Cost">
+          <Field label="Cost" required>
             <input
               type="number"
               required
@@ -108,7 +108,7 @@ export function MaintenanceRecordFormDialog({ open, onClose, onSave, truck }: Ma
           </Field>
         </div>
 
-        <Field label="Description">
+        <Field label="Description" required>
           <textarea
             required
             value={form.description}
@@ -122,13 +122,13 @@ export function MaintenanceRecordFormDialog({ open, onClose, onSave, truck }: Ma
           <button
             type="button"
             onClick={onClose}
-            className="rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+            className="btn-interactive rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-700 transition-all duration-200 hover:bg-gray-50 active:scale-95"
           >
             Cancel
           </button>
           <button
             type="submit"
-            className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+            className="btn-interactive rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-all duration-200 hover:bg-blue-700 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Add Record
           </button>

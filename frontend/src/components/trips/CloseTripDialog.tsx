@@ -77,7 +77,20 @@ export function CloseTripDialog({ open, trip, driver, truck, onClose, onSubmit }
               <input readOnly disabled value={trip.bookingReferenceNo} className={readonlyClass} />
             </Field>
             <Field label="Container Reference">
-              <input readOnly disabled value={trip.cargoContainerReference} className={readonlyClass} />
+              <input
+                readOnly
+                disabled
+                value={
+                  trip.containerSpecification === "2 X 20 FEET CONTAINERS"
+                    ? `${trip.containerNumber1} / ${trip.containerNumber2}`
+                    : trip.containerSpecification === "20 FT CONTAINER" || trip.containerSpecification === "40 FT CONTAINER"
+                    ? trip.containerNumber
+                    : trip.containerSpecification === "OPEN LOAD CARGO"
+                    ? trip.cargoReference
+                    : ""
+                }
+                className={readonlyClass}
+              />
             </Field>
             <Field label="Release Order Reference" className="sm:col-span-2">
               <input readOnly disabled value={trip.releaseOrderReference} className={readonlyClass} />

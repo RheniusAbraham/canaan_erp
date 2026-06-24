@@ -1,16 +1,21 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Plus } from "lucide-react";
 import { VendorTable } from "@/components/vendors/VendorTable";
 import { VendorFormDialog } from "@/components/vendors/VendorFormDialog";
-import { initialVendors } from "@/lib/vendor-data";
+import { vendorsApi } from "@/lib/api";
 import type { Vendor } from "@/types/vendor";
 
 export default function VendorsPage() {
-  const [vendors, setVendors] = useState<Vendor[]>(initialVendors);
+  const [vendors, setVendors] = useState<Vendor[]>([]);
+  const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingVendor, setEditingVendor] = useState<Vendor | null>(null);
+
+  useEffect(() => {
+    vendorsApi.list().then(setVendors).finally(() => setLoading(false));
+  }, []);
 
   function handleAdd() {
     setEditingVendor(null);
@@ -22,24 +27,28 @@ export default function VendorsPage() {
     setDialogOpen(true);
   }
 
-  function handleDelete(id: string) {
+  async function handleDelete(id: string) {
     if (!confirm("Delete this vendor?")) return;
+    await vendorsApi.delete(id);
     setVendors((prev) => prev.filter((vendor) => vendor.id !== id));
   }
 
-  function handleSave(vendor: Vendor) {
-    setVendors((prev) => {
-      const exists = prev.some((existing) => existing.id === vendor.id);
-      if (exists) {
-        return prev.map((existing) => (existing.id === vendor.id ? vendor : existing));
-      }
-      return [...prev, vendor];
-    });
+  async function handleSave(vendor: Vendor) {
+    const exists = vendors.some((existing) => existing.id === vendor.id);
+    if (exists) {
+      const updated = await vendorsApi.update(vendor.id, vendor);
+      setVendors((prev) => prev.map((existing) => (existing.id === vendor.id ? updated : existing)));
+    } else {
+      const created = await vendorsApi.create(vendor);
+      setVendors((prev) => [...prev, created]);
+    }
     setDialogOpen(false);
   }
 
+  if (loading) return <div className="p-6 text-sm text-gray-500">Loading...</div>;
+
   return (
-    <div className="flex flex-col gap-6">
+    <div className="animate-stagger flex flex-col gap-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Our Vendors</h1>

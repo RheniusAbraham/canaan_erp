@@ -58,7 +58,7 @@ export function VendorFormDialog({ open, onClose, onSave, initialData }: VendorF
     <Dialog open={open} onClose={onClose} title={initialData ? "Edit Vendor" : "Add Vendor"}>
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <Field label="Vendor Name">
+          <Field label="Vendor Name" required>
             <input
               type="text"
               required
@@ -69,7 +69,7 @@ export function VendorFormDialog({ open, onClose, onSave, initialData }: VendorF
             />
           </Field>
 
-          <Field label="Vendor Category">
+          <Field label="Vendor Category" required>
             <input
               type="text"
               required
@@ -86,7 +86,7 @@ export function VendorFormDialog({ open, onClose, onSave, initialData }: VendorF
             </datalist>
           </Field>
 
-          <Field label="Contact Number">
+          <Field label="Contact Number" required>
             <input
               type="tel"
               required
@@ -97,7 +97,7 @@ export function VendorFormDialog({ open, onClose, onSave, initialData }: VendorF
             />
           </Field>
 
-          <Field label="GSTIN">
+          <Field label="GSTIN" required>
             <input
               type="text"
               required
@@ -108,7 +108,7 @@ export function VendorFormDialog({ open, onClose, onSave, initialData }: VendorF
             />
           </Field>
 
-          <Field label="PAN">
+          <Field label="PAN" required>
             <input
               type="text"
               required
@@ -119,7 +119,7 @@ export function VendorFormDialog({ open, onClose, onSave, initialData }: VendorF
             />
           </Field>
 
-          <Field label="Email">
+          <Field label="Email" required>
             <input
               type="email"
               required
@@ -130,7 +130,7 @@ export function VendorFormDialog({ open, onClose, onSave, initialData }: VendorF
             />
           </Field>
 
-          <Field label="Status">
+          <Field label="Status" required>
             <select
               required
               value={form.status}
@@ -149,7 +149,7 @@ export function VendorFormDialog({ open, onClose, onSave, initialData }: VendorF
           </Field>
         </div>
 
-        <Field label="Address">
+        <Field label="Address" required>
           <textarea
             required
             value={form.address}
@@ -163,13 +163,13 @@ export function VendorFormDialog({ open, onClose, onSave, initialData }: VendorF
           <button
             type="button"
             onClick={onClose}
-            className="rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+            className="btn-interactive rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-700 transition-all duration-200 hover:bg-gray-50 active:scale-95"
           >
             Cancel
           </button>
           <button
             type="submit"
-            className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+            className="btn-interactive rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-all duration-200 hover:bg-blue-700 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {initialData ? "Save Changes" : "Add Vendor"}
           </button>
