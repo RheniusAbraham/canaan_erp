@@ -48,7 +48,7 @@ export function TripTable({ trips, drivers, trucks, customers, onEdit, onMarkSta
               "Assigned Date",
               "Driver",
               "Vehicle",
-              ...(onEdit || onCancel || onCloseTrip ? ["Actions"] : []),
+              ...(onEdit || onMarkStarted || onMarkCompleted || onCancel || onCloseTrip ? ["Actions"] : []),
             ].map(
               (column) => (
                 <th key={column} className="px-4 py-3 text-xs font-semibold tracking-wider text-gray-500 uppercase">
