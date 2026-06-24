@@ -101,7 +101,7 @@ export const initialTrips: Trip[] = [
   {
     id: "1",
     tripId: "TRP-1050",
-    status: "Assigned",
+    status: "Started",
     assignedDate: "2026-06-24",
     bookingReferenceNo: "CGI/010626/001/26-27",
     bookingCreatedDate: "2026-06-01",

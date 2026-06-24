@@ -62,7 +62,7 @@ export default function CompletedTripsPage() {
       </div>
 
       <TripTable
-        trips={trips}
+        trips={trips.filter((trip) => !(trip as any).hasClosure && !closedTripIds.has(trip.id))}
         drivers={drivers}
         trucks={trucks}
         customers={customers}
