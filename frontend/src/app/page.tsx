@@ -251,10 +251,10 @@ export default function DashboardPage() {
   const totalCompensationPaid = driverCompTotals.Salary + staffCompTotals.Salary;
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="animate-stagger flex flex-col gap-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-        <p className="mt-1 text-sm text-gray-500">
+        <h1 className="text-4xl font-bold text-gray-900">Dashboard</h1>
+        <p className="mt-1 text-[13px] font-normal text-gray-500">
           Real-time overview of fleet operations, trips, attendance, maintenance, and finances
         </p>
       </div>
@@ -269,7 +269,7 @@ export default function DashboardPage() {
               "rounded-full px-4 py-2 text-sm font-medium shadow-sm transition-all",
               activeTab === tab
                 ? "bg-blue-600 text-white shadow-blue-200"
-                : "border border-gray-200 bg-white text-gray-600 hover:border-gray-300 hover:bg-gray-50"
+                : "border border-white/50 bg-white/60 backdrop-blur-md text-gray-600 hover:border-white/70 hover:bg-white/80"
             )}
           >
             {tab}
@@ -331,13 +331,13 @@ export default function DashboardPage() {
           </div>
 
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-            <div className="rounded-xl border border-gray-200 bg-white p-5">
-              <h2 className="text-base font-bold text-gray-900">Recent Trips</h2>
+            <div className="rounded-xl border border-white/80 bg-white/90 p-5 shadow-[0_8px_30px_rgba(0,0,0,0.06)] backdrop-blur-xl transition-all duration-300 hover:shadow-[0_12px_40px_rgba(0,0,0,0.08)]">
+              <h2 className="text-2xl font-bold text-gray-900">Recent Trips</h2>
               <div className="mt-3 flex flex-col gap-3">
                 {initialTrips.map((trip) => (
-                  <div key={trip.id} className="flex items-center justify-between gap-3 rounded-lg border border-gray-100 p-3">
+                  <div key={trip.id} className="group flex items-center justify-between gap-3 rounded-xl border border-white/50 bg-white/40 p-3 transition-all duration-500 ease-out hover:-translate-y-1 hover:shadow-[0_8px_20px_rgba(0,0,0,0.08)] hover:bg-white/80 backdrop-blur-sm cursor-pointer">
                     <div>
-                      <p className="text-sm font-semibold text-gray-900">{trip.tripId}</p>
+                      <p className="text-[15px] font-semibold text-gray-900">{trip.tripId}</p>
                       <p className="text-xs text-gray-500">
                         {trip.origin} → {trip.destination} · {trip.shipperConsignee}
                       </p>
@@ -350,16 +350,16 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            <div className="rounded-xl border border-gray-200 bg-white p-5">
-              <h2 className="text-base font-bold text-gray-900">Pending Approvals</h2>
+            <div className="rounded-xl border border-white/80 bg-white/90 p-5 shadow-[0_8px_30px_rgba(0,0,0,0.06)] backdrop-blur-xl transition-all duration-300 hover:shadow-[0_12px_40px_rgba(0,0,0,0.08)]">
+              <h2 className="text-2xl font-bold text-gray-900">Pending Approvals</h2>
               <div className="mt-3 flex flex-col gap-3">
                 {pendingLeaveRequests.length === 0 && (
                   <p className="text-sm text-gray-500">No pending leave requests.</p>
                 )}
                 {pendingLeaveRequests.map((request) => (
-                  <div key={request.id} className="flex items-center justify-between gap-3 rounded-lg border border-gray-100 p-3">
+                  <div key={request.id} className="group flex items-center justify-between gap-3 rounded-xl border border-white/50 bg-white/40 p-3 transition-all duration-500 ease-out hover:-translate-y-1 hover:shadow-[0_8px_20px_rgba(0,0,0,0.08)] hover:bg-white/80 backdrop-blur-sm cursor-pointer">
                     <div>
-                      <p className="text-sm font-semibold text-gray-900">{request.applicantName}</p>
+                      <p className="text-[15px] font-semibold text-gray-900">{request.applicantName}</p>
                       <p className="text-xs text-gray-500">
                         {request.category} · {request.fromDate} to {request.toDate}
                       </p>
@@ -404,8 +404,8 @@ export default function DashboardPage() {
             />
           </div>
 
-          <div className="rounded-xl border border-gray-200 bg-white p-5">
-            <h2 className="text-base font-bold text-gray-900">Trip Status Breakdown</h2>
+          <div className="rounded-xl border border-white/80 bg-white/90 p-5 shadow-[0_8px_30px_rgba(0,0,0,0.06)] backdrop-blur-xl transition-all duration-300 hover:shadow-[0_12px_40px_rgba(0,0,0,0.08)]">
+            <h2 className="text-2xl font-bold text-gray-900">Trip Status Breakdown</h2>
             <div className="mt-3 flex flex-wrap gap-2.5">
               {(Object.entries(tripStatusCounts) as [TripStatus, number][])
                 .filter(([, count]) => count > 0)
@@ -420,9 +420,9 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white">
+          <div className="overflow-x-auto rounded-xl border border-white/80 bg-white/90 shadow-[0_8px_30px_rgba(0,0,0,0.06)] backdrop-blur-xl transition-all duration-300 hover:shadow-[0_12px_40px_rgba(0,0,0,0.08)]">
             <table className="w-full min-w-[900px] text-left text-sm">
-              <thead className="bg-gray-50 text-xs font-semibold tracking-wider text-gray-500 uppercase">
+              <thead className="bg-gray-50 text-[13px] font-semibold tracking-wider text-gray-500 uppercase">
                 <tr>
                   <th className="px-4 py-3">Trip ID</th>
                   <th className="px-4 py-3">Booking Ref</th>
@@ -435,8 +435,8 @@ export default function DashboardPage() {
               </thead>
               <tbody className="divide-y divide-gray-100">
                 {initialTrips.map((trip) => (
-                  <tr key={trip.id}>
-                    <td className="px-4 py-3 font-semibold text-gray-900">{trip.tripId}</td>
+                  <tr key={trip.id} className="group transition-all duration-500 ease-out hover:-translate-y-1 hover:shadow-[0_8px_20px_rgba(0,0,0,0.08)] hover:bg-white/80 relative hover:z-10 cursor-pointer">
+                    <td className="px-4 py-3 text-[15px] font-semibold text-gray-900">{trip.tripId}</td>
                     <td className="px-4 py-3 text-gray-600">{trip.bookingReferenceNo}</td>
                     <td className="px-4 py-3 text-gray-600">{trip.shipperConsignee}</td>
                     <td className="px-4 py-3 text-gray-600">
@@ -494,8 +494,8 @@ export default function DashboardPage() {
           </div>
 
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-            <div className="rounded-xl border border-gray-200 bg-white p-5">
-              <h2 className="text-base font-bold text-gray-900">Driver Attendance Today</h2>
+            <div className="rounded-xl border border-white/80 bg-white/90 p-5 shadow-[0_8px_30px_rgba(0,0,0,0.06)] backdrop-blur-xl transition-all duration-300 hover:shadow-[0_12px_40px_rgba(0,0,0,0.08)]">
+              <h2 className="text-2xl font-bold text-gray-900">Driver Attendance Today</h2>
               <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
                 <div className="rounded-lg border border-gray-100 p-3 text-center">
                   <p className="text-xs font-medium tracking-wider text-gray-500 uppercase">Present</p>
@@ -516,8 +516,8 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            <div className="rounded-xl border border-gray-200 bg-white p-5">
-              <h2 className="text-base font-bold text-gray-900">Staff Attendance Today</h2>
+            <div className="rounded-xl border border-white/80 bg-white/90 p-5 shadow-[0_8px_30px_rgba(0,0,0,0.06)] backdrop-blur-xl transition-all duration-300 hover:shadow-[0_12px_40px_rgba(0,0,0,0.08)]">
+              <h2 className="text-2xl font-bold text-gray-900">Staff Attendance Today</h2>
               <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
                 <div className="rounded-lg border border-gray-100 p-3 text-center">
                   <p className="text-xs font-medium tracking-wider text-gray-500 uppercase">Present</p>
@@ -539,9 +539,9 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white">
+          <div className="overflow-x-auto rounded-xl border border-white/80 bg-white/90 shadow-[0_8px_30px_rgba(0,0,0,0.06)] backdrop-blur-xl transition-all duration-300 hover:shadow-[0_12px_40px_rgba(0,0,0,0.08)]">
             <table className="w-full min-w-[700px] text-left text-sm">
-              <thead className="bg-gray-50 text-xs font-semibold tracking-wider text-gray-500 uppercase">
+              <thead className="bg-gray-50 text-[13px] font-semibold tracking-wider text-gray-500 uppercase">
                 <tr>
                   <th className="px-4 py-3">Applicant</th>
                   <th className="px-4 py-3">Category</th>
@@ -559,8 +559,8 @@ export default function DashboardPage() {
                   </tr>
                 )}
                 {pendingLeaveRequests.map((request) => (
-                  <tr key={request.id}>
-                    <td className="px-4 py-3 font-semibold text-gray-900">{request.applicantName}</td>
+                  <tr key={request.id} className="group transition-all duration-500 ease-out hover:-translate-y-1 hover:shadow-[0_8px_20px_rgba(0,0,0,0.08)] hover:bg-white/80 relative hover:z-10 cursor-pointer">
+                    <td className="px-4 py-3 text-[15px] font-semibold text-gray-900">{request.applicantName}</td>
                     <td className="px-4 py-3 text-gray-600">{request.category}</td>
                     <td className="px-4 py-3 text-gray-600">{request.fromDate}</td>
                     <td className="px-4 py-3 text-gray-600">{request.toDate}</td>
@@ -602,9 +602,9 @@ export default function DashboardPage() {
             />
           </div>
 
-          <div className="rounded-xl border border-gray-200 bg-white p-5">
-            <h2 className="text-base font-bold text-gray-900">Compliance Status</h2>
-            <p className="mt-1 text-sm text-gray-500">FC, Road Tax, National Permit, and Pollution Certificate validity</p>
+          <div className="rounded-xl border border-white/80 bg-white/90 p-5 shadow-[0_8px_30px_rgba(0,0,0,0.06)] backdrop-blur-xl transition-all duration-300 hover:shadow-[0_12px_40px_rgba(0,0,0,0.08)]">
+            <h2 className="text-2xl font-bold text-gray-900">Compliance Status</h2>
+            <p className="mt-1 text-[13px] font-normal text-gray-500">FC, Road Tax, National Permit, and Pollution Certificate validity</p>
             <div className="mt-3 grid grid-cols-3 gap-4 sm:max-w-md">
               {(["Valid", "Expiring Soon", "Expired"] as const).map((status) => (
                 <div key={status} className="rounded-lg border border-gray-100 p-4">
@@ -624,9 +624,9 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white">
+          <div className="overflow-x-auto rounded-xl border border-white/80 bg-white/90 shadow-[0_8px_30px_rgba(0,0,0,0.06)] backdrop-blur-xl transition-all duration-300 hover:shadow-[0_12px_40px_rgba(0,0,0,0.08)]">
             <table className="w-full min-w-[800px] text-left text-sm">
-              <thead className="bg-gray-50 text-xs font-semibold tracking-wider text-gray-500 uppercase">
+              <thead className="bg-gray-50 text-[13px] font-semibold tracking-wider text-gray-500 uppercase">
                 <tr>
                   <th className="px-4 py-3">Vehicle</th>
                   <th className="px-4 py-3">Category</th>
@@ -644,8 +644,8 @@ export default function DashboardPage() {
                   </tr>
                 )}
                 {topMaintenanceItems.map((item, index) => (
-                  <tr key={`${item.truckId}-${item.item}-${index}`}>
-                    <td className="px-4 py-3 font-semibold text-gray-900">{item.registrationNumber}</td>
+                  <tr key={`${item.truckId}-${item.item}-${index}`} className="group transition-all duration-500 ease-out hover:-translate-y-1 hover:shadow-[0_8px_20px_rgba(0,0,0,0.08)] hover:bg-white/80 relative hover:z-10 cursor-pointer">
+                    <td className="px-4 py-3 text-[15px] font-semibold text-gray-900">{item.registrationNumber}</td>
                     <td className="px-4 py-3 text-gray-600">{item.category}</td>
                     <td className="px-4 py-3 text-gray-600">{item.item}</td>
                     <td className="px-4 py-3 text-gray-600">{item.remainingKm}</td>
@@ -696,9 +696,9 @@ export default function DashboardPage() {
             />
           </div>
 
-          <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white">
+          <div className="overflow-x-auto rounded-xl border border-white/80 bg-white/90 shadow-[0_8px_30px_rgba(0,0,0,0.06)] backdrop-blur-xl transition-all duration-300 hover:shadow-[0_12px_40px_rgba(0,0,0,0.08)]">
             <table className="w-full min-w-[800px] text-left text-sm">
-              <thead className="bg-gray-50 text-xs font-semibold tracking-wider text-gray-500 uppercase">
+              <thead className="bg-gray-50 text-[13px] font-semibold tracking-wider text-gray-500 uppercase">
                 <tr>
                   <th className="px-4 py-3">EMI Name</th>
                   <th className="px-4 py-3">Vehicle</th>
@@ -709,8 +709,8 @@ export default function DashboardPage() {
               </thead>
               <tbody className="divide-y divide-gray-100">
                 {initialEmiRecords.map((emi) => (
-                  <tr key={emi.id}>
-                    <td className="px-4 py-3 font-semibold text-gray-900">{emi.emiName}</td>
+                  <tr key={emi.id} className="group transition-all duration-500 ease-out hover:-translate-y-1 hover:shadow-[0_8px_20px_rgba(0,0,0,0.08)] hover:bg-white/80 relative hover:z-10 cursor-pointer">
+                    <td className="px-4 py-3 text-[15px] font-semibold text-gray-900">{emi.emiName}</td>
                     <td className="px-4 py-3 text-gray-600">{emi.truckRegistration}</td>
                     <td className="px-4 py-3 text-gray-600">{emi.bankName}</td>
                     <td className="px-4 py-3 text-gray-600">{formatCurrency(Number(emi.emiAmount) || 0)}</td>
@@ -721,9 +721,9 @@ export default function DashboardPage() {
             </table>
           </div>
 
-          <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white">
+          <div className="overflow-x-auto rounded-xl border border-white/80 bg-white/90 shadow-[0_8px_30px_rgba(0,0,0,0.06)] backdrop-blur-xl transition-all duration-300 hover:shadow-[0_12px_40px_rgba(0,0,0,0.08)]">
             <table className="w-full min-w-[800px] text-left text-sm">
-              <thead className="bg-gray-50 text-xs font-semibold tracking-wider text-gray-500 uppercase">
+              <thead className="bg-gray-50 text-[13px] font-semibold tracking-wider text-gray-500 uppercase">
                 <tr>
                   <th className="px-4 py-3">Title</th>
                   <th className="px-4 py-3">Category</th>
@@ -735,8 +735,8 @@ export default function DashboardPage() {
               </thead>
               <tbody className="divide-y divide-gray-100">
                 {initialRecurringPayments.map((payment) => (
-                  <tr key={payment.id}>
-                    <td className="px-4 py-3 font-semibold text-gray-900">{payment.title}</td>
+                  <tr key={payment.id} className="group transition-all duration-500 ease-out hover:-translate-y-1 hover:shadow-[0_8px_20px_rgba(0,0,0,0.08)] hover:bg-white/80 relative hover:z-10 cursor-pointer">
+                    <td className="px-4 py-3 text-[15px] font-semibold text-gray-900">{payment.title}</td>
                     <td className="px-4 py-3 text-gray-600">{payment.category}</td>
                     <td className="px-4 py-3 text-gray-600">{formatCurrency(payment.amount)}</td>
                     <td className="px-4 py-3 text-gray-600">{payment.frequency}</td>
@@ -758,8 +758,8 @@ export default function DashboardPage() {
           </div>
 
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-            <div className="rounded-xl border border-gray-200 bg-white p-5">
-              <h2 className="text-base font-bold text-gray-900">Driver Compensation</h2>
+            <div className="rounded-xl border border-white/80 bg-white/90 p-5 shadow-[0_8px_30px_rgba(0,0,0,0.06)] backdrop-blur-xl transition-all duration-300 hover:shadow-[0_12px_40px_rgba(0,0,0,0.08)]">
+              <h2 className="text-2xl font-bold text-gray-900">Driver Compensation</h2>
               <div className="mt-3 grid grid-cols-2 gap-3">
                 <div className="rounded-lg border border-gray-100 p-3">
                   <p className="text-xs font-medium tracking-wider text-gray-500 uppercase">Salaries Paid</p>
@@ -772,8 +772,8 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            <div className="rounded-xl border border-gray-200 bg-white p-5">
-              <h2 className="text-base font-bold text-gray-900">Staff Compensation</h2>
+            <div className="rounded-xl border border-white/80 bg-white/90 p-5 shadow-[0_8px_30px_rgba(0,0,0,0.06)] backdrop-blur-xl transition-all duration-300 hover:shadow-[0_12px_40px_rgba(0,0,0,0.08)]">
+              <h2 className="text-2xl font-bold text-gray-900">Staff Compensation</h2>
               <div className="mt-3 grid grid-cols-2 gap-3">
                 <div className="rounded-lg border border-gray-100 p-3">
                   <p className="text-xs font-medium tracking-wider text-gray-500 uppercase">Salaries Paid</p>

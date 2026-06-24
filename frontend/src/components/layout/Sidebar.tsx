@@ -10,8 +10,8 @@ export function Sidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="flex h-screen w-[280px] shrink-0 flex-col border-r border-gray-200 bg-white">
-      <div className="flex items-center gap-3 border-b border-gray-200 px-5 py-4">
+    <aside className="flex h-screen w-[280px] shrink-0 flex-col border-r border-white/50 bg-white/60 backdrop-blur-xl shadow-sm">
+      <div className="flex items-center gap-3 border-b border-white/50 px-5 py-4">
         <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-600">
           <Truck className="h-5 w-5 text-white" />
         </div>
@@ -28,7 +28,7 @@ export function Sidebar() {
       <nav className="flex-1 overflow-y-auto px-3 py-4">
         {sidebarSections.map((section) => (
           <div key={section.title} className="mb-4">
-            <p className="px-3 pb-2 text-[11px] font-semibold tracking-wider text-gray-400 uppercase">
+            <p className="px-3 pb-2 text-[11px] font-bold tracking-wider text-blue-600 uppercase">
               {section.title}
             </p>
             <ul className="space-y-1">
@@ -40,10 +40,10 @@ export function Sidebar() {
                     <Link
                       href={item.href}
                       className={cn(
-                        "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                        "flex items-center gap-3 rounded-lg px-3 py-2 text-[15px] font-medium transition-all duration-500 ease-out hover:-translate-y-1",
                         isActive
-                          ? "bg-blue-600 text-white"
-                          : "text-gray-700 hover:bg-gray-100"
+                          ? "border border-blue-200/60 bg-blue-50/60 backdrop-blur-md text-blue-700 shadow-[0_4px_20px_rgba(37,99,235,0.15)] hover:shadow-[0_8px_25px_rgba(37,99,235,0.2)]"
+                          : "border border-transparent text-gray-600 hover:border-white/30 hover:bg-white/40 hover:backdrop-blur-sm hover:text-gray-900 hover:shadow-[0_4px_15px_rgba(0,0,0,0.05)]"
                       )}
                     >
                       <Icon className="h-4 w-4" />
@@ -57,7 +57,7 @@ export function Sidebar() {
         ))}
       </nav>
 
-      <div className="flex items-center gap-3 border-t border-gray-200 px-4 py-3">
+      <div className="flex items-center gap-3 border-t border-white/50 px-4 py-3">
         <div className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-600 text-sm font-semibold text-white">
           U
         </div>

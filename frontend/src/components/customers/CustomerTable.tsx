@@ -33,14 +33,14 @@ const statusStyles: Record<string, string> = {
 export function CustomerTable({ customers, onEdit, onDelete }: CustomerTableProps) {
   if (customers.length === 0) {
     return (
-      <div className="rounded-xl border border-gray-200 bg-white p-10 text-center text-sm text-gray-500">
+      <div className="rounded-xl border border-white/80 bg-white/90 p-10 shadow-[0_8px_30px_rgba(0,0,0,0.06)] backdrop-blur-xl text-center text-sm text-gray-500 transition-all duration-300">
         No customers yet. Click &ldquo;Add Customer&rdquo; to create one.
       </div>
     );
   }
 
   return (
-    <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white">
+    <div className="overflow-x-auto rounded-xl border border-white/80 bg-white/90 shadow-[0_8px_30px_rgba(0,0,0,0.06)] backdrop-blur-xl transition-all duration-300 hover:shadow-[0_12px_40px_rgba(0,0,0,0.08)]">
       <table className="w-full min-w-[1100px] text-left text-sm">
         <thead>
           <tr className="border-b border-gray-200 bg-gray-50">
@@ -56,7 +56,7 @@ export function CustomerTable({ customers, onEdit, onDelete }: CustomerTableProp
         </thead>
         <tbody className="divide-y divide-gray-100">
           {customers.map((customer) => (
-            <tr key={customer.id} className="hover:bg-gray-50">
+            <tr key={customer.id} className="group transition-all duration-500 ease-out hover:-translate-y-1 hover:shadow-[0_8px_20px_rgba(0,0,0,0.08)] hover:bg-white/80 relative hover:z-10 cursor-pointer">
               <td className="px-4 py-3">
                 <Avatar photoUrl={customer.photoUrl} label={customer.name} size={44} />
               </td>

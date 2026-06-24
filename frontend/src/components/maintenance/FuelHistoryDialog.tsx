@@ -73,7 +73,7 @@ export function FuelHistoryDialog({ open, truck, logs, onClose }: FuelHistoryDia
                 {[...logs].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).map((log) => {
                   const mileage = mileageMap.get(log.id);
                   return (
-                    <tr key={log.id} className="hover:bg-gray-50">
+                    <tr key={log.id} className="group transition-all duration-500 ease-out hover:-translate-y-1 hover:shadow-[0_8px_20px_rgba(0,0,0,0.08)] hover:bg-white/80 relative hover:z-10 cursor-pointer">
                       <td className="px-3 py-2.5 text-gray-700 whitespace-nowrap">{log.date}</td>
                       <td className="px-3 py-2.5 text-gray-700">{log.odometer.toLocaleString("en-IN")}</td>
                       <td className="px-3 py-2.5 text-gray-700">{log.litres} L</td>

@@ -7,6 +7,7 @@ import { CUSTOMER_STATUS_OPTIONS } from "@/lib/customer-data";
 import { CONTAINER_TYPE_OPTIONS } from "@/lib/customer-pricing-data";
 import type { Customer } from "@/types/customer";
 import type { CustomerPricing } from "@/types/customer-pricing";
+import { DatePicker } from "@/components/ui/DatePicker";
 
 type CustomerPricingFormDialogProps = {
   open: boolean;
@@ -164,23 +165,11 @@ export function CustomerPricingFormDialog({
           </Field>
 
           <Field label="Valid From">
-            <input
-              type="date"
-              required
-              value={form.validFrom}
-              onChange={(e) => update("validFrom", e.target.value)}
-              className={inputClass}
-            />
+            <DatePicker value={form.validFrom} onChange={(val) => update("validFrom", val)} />
           </Field>
 
           <Field label="Valid To">
-            <input
-              type="date"
-              required
-              value={form.validTo}
-              onChange={(e) => update("validTo", e.target.value)}
-              className={inputClass}
-            />
+            <DatePicker value={form.validTo} onChange={(val) => update("validTo", val)} />
           </Field>
 
           <Field label="Status">

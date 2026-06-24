@@ -7,6 +7,7 @@ import type { Trip } from "@/types/trip";
 import type { Driver } from "@/types/driver";
 import type { Truck } from "@/types/truck";
 import type { TripClosureData, PaymentMode } from "@/types/trip-closure";
+import { DatePicker } from "@/components/ui/DatePicker";
 
 const PAYMENT_MODE_OPTIONS: PaymentMode[] = [
   "Cash",
@@ -128,22 +129,10 @@ export function CloseTripDialog({ open, trip, driver, truck, onClose, onSubmit }
           <p className={sectionHeadingClass}>3. Trip Completion</p>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Field label="Trip Completed Date">
-              <input
-                type="date"
-                required
-                value={form.tripCompletedDate}
-                onChange={(e) => update("tripCompletedDate", e.target.value)}
-                className={inputClass}
-              />
+              <DatePicker value={form.tripCompletedDate} onChange={(val) => update("tripCompletedDate", val)} />
             </Field>
             <Field label="Trip Closing Date">
-              <input
-                type="date"
-                required
-                value={form.tripClosingDate}
-                onChange={(e) => update("tripClosingDate", e.target.value)}
-                className={inputClass}
-              />
+              <DatePicker value={form.tripClosingDate} onChange={(val) => update("tripClosingDate", val)} />
             </Field>
           </div>
         </section>

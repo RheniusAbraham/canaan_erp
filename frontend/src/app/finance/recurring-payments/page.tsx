@@ -31,7 +31,7 @@ export default function RecurringPaymentsPage() {
   }, []);
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="animate-stagger flex flex-col gap-6">
       <div>
         <h1 className="text-2xl font-bold text-gray-900">Recurring Payments</h1>
         <p className="mt-1 text-sm text-gray-500">
@@ -40,15 +40,15 @@ export default function RecurringPaymentsPage() {
       </div>
 
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
-        <div className="rounded-xl border border-gray-200 bg-white p-4">
+        <div className="rounded-xl border border-white/80 bg-white/90 p-4 shadow-[0_8px_30px_rgba(0,0,0,0.06)] backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_12px_40px_rgba(0,0,0,0.12)]">
           <p className="text-xs font-medium tracking-wider text-gray-500 uppercase">Active</p>
           <p className="mt-1 text-2xl font-bold text-green-600">{summary.active}</p>
         </div>
-        <div className="rounded-xl border border-gray-200 bg-white p-4">
+        <div className="rounded-xl border border-white/80 bg-white/90 p-4 shadow-[0_8px_30px_rgba(0,0,0,0.06)] backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_12px_40px_rgba(0,0,0,0.12)]">
           <p className="text-xs font-medium tracking-wider text-gray-500 uppercase">Paused</p>
           <p className="mt-1 text-2xl font-bold text-gray-500">{summary.paused}</p>
         </div>
-        <div className="rounded-xl border border-gray-200 bg-white p-4">
+        <div className="rounded-xl border border-white/80 bg-white/90 p-4 shadow-[0_8px_30px_rgba(0,0,0,0.06)] backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_12px_40px_rgba(0,0,0,0.12)]">
           <p className="text-xs font-medium tracking-wider text-gray-500 uppercase">Est. Monthly Spend</p>
           <p className="mt-1 text-2xl font-bold text-gray-900">{formatCurrency(summary.monthlyTotal)}</p>
         </div>

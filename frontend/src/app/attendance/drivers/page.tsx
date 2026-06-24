@@ -3,6 +3,7 @@
 import { Search } from "lucide-react";
 import { useMemo, useState } from "react";
 import { DriverAttendanceTable } from "@/components/attendance/DriverAttendanceTable";
+import { DatePicker } from "@/components/ui/DatePicker";
 import { initialDriverAttendance, getAttendanceForDate } from "@/lib/attendance-data";
 import { initialDrivers } from "@/lib/driver-data";
 
@@ -31,7 +32,7 @@ export default function DriverAttendancePage() {
   }, [search]);
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="animate-stagger flex flex-col gap-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Driver Attendance</h1>
@@ -43,30 +44,27 @@ export default function DriverAttendancePage() {
           <label htmlFor="attendance-date" className="text-sm font-medium text-gray-600">
             Date
           </label>
-          <input
-            id="attendance-date"
-            type="date"
+          <DatePicker
             value={date}
-            onChange={(event) => setDate(event.target.value)}
-            className="rounded-lg border border-gray-200 px-3 py-1.5 text-sm text-gray-700 focus:border-blue-500 focus:outline-none"
+            onChange={(val) => setDate(val)}
           />
         </div>
       </div>
 
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-        <div className="rounded-xl border border-gray-200 bg-white p-4">
+        <div className="rounded-xl border border-white/80 bg-white/90 p-4 shadow-[0_8px_30px_rgba(0,0,0,0.06)] backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_12px_40px_rgba(0,0,0,0.12)]">
           <p className="text-xs font-medium tracking-wider text-gray-500 uppercase">Present</p>
           <p className="mt-1 text-2xl font-bold text-green-600">{summary.Present}</p>
         </div>
-        <div className="rounded-xl border border-gray-200 bg-white p-4">
+        <div className="rounded-xl border border-white/80 bg-white/90 p-4 shadow-[0_8px_30px_rgba(0,0,0,0.06)] backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_12px_40px_rgba(0,0,0,0.12)]">
           <p className="text-xs font-medium tracking-wider text-gray-500 uppercase">Absent</p>
           <p className="mt-1 text-2xl font-bold text-red-600">{summary.Absent}</p>
         </div>
-        <div className="rounded-xl border border-gray-200 bg-white p-4">
+        <div className="rounded-xl border border-white/80 bg-white/90 p-4 shadow-[0_8px_30px_rgba(0,0,0,0.06)] backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_12px_40px_rgba(0,0,0,0.12)]">
           <p className="text-xs font-medium tracking-wider text-gray-500 uppercase">On Leave</p>
           <p className="mt-1 text-2xl font-bold text-yellow-600">{summary["On Leave"]}</p>
         </div>
-        <div className="rounded-xl border border-gray-200 bg-white p-4">
+        <div className="rounded-xl border border-white/80 bg-white/90 p-4 shadow-[0_8px_30px_rgba(0,0,0,0.06)] backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_12px_40px_rgba(0,0,0,0.12)]">
           <p className="text-xs font-medium tracking-wider text-gray-500 uppercase">Not Marked</p>
           <p className="mt-1 text-2xl font-bold text-gray-500">{summary["Not Marked"]}</p>
         </div>

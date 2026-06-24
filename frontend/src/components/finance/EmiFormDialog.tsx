@@ -5,6 +5,7 @@ import { Dialog } from "@/components/ui/Dialog";
 import { Field, inputClass } from "@/components/ui/Field";
 import { initialTrucks } from "@/lib/truck-data";
 import type { EmiRecord } from "@/types/finance";
+import { DatePicker } from "@/components/ui/DatePicker";
 
 type EmiFormDialogProps = {
   open: boolean;
@@ -128,23 +129,11 @@ export function EmiFormDialog({ open, onClose, onSave, initialData }: EmiFormDia
           </Field>
 
           <Field label="EMI Start Date">
-            <input
-              type="date"
-              required
-              value={form.emiStartDate}
-              onChange={(e) => update("emiStartDate", e.target.value)}
-              className={inputClass}
-            />
+            <DatePicker value={form.emiStartDate} onChange={(val) => update("emiStartDate", val)} />
           </Field>
 
           <Field label="EMI End Date">
-            <input
-              type="date"
-              required
-              value={form.emiEndDate}
-              onChange={(e) => update("emiEndDate", e.target.value)}
-              className={inputClass}
-            />
+            <DatePicker value={form.emiEndDate} onChange={(val) => update("emiEndDate", val)} />
           </Field>
 
           <Field label="Tenure (in Months)">
@@ -160,13 +149,7 @@ export function EmiFormDialog({ open, onClose, onSave, initialData }: EmiFormDia
           </Field>
 
           <Field label="Date of EMI Payment">
-            <input
-              type="date"
-              required
-              value={form.emiPaymentDate}
-              onChange={(e) => update("emiPaymentDate", e.target.value)}
-              className={inputClass}
-            />
+            <DatePicker value={form.emiPaymentDate} onChange={(val) => update("emiPaymentDate", val)} />
           </Field>
         </div>
 

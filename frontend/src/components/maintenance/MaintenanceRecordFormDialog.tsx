@@ -6,6 +6,7 @@ import { Field, inputClass } from "@/components/ui/Field";
 import { MAINTENANCE_TYPE_OPTIONS } from "@/lib/truck-maintenance-data";
 import type { MaintenanceRecord } from "@/types/truck-maintenance";
 import type { Truck } from "@/types/truck";
+import { DatePicker } from "@/components/ui/DatePicker";
 
 type MaintenanceRecordFormDialogProps = {
   open: boolean;
@@ -57,13 +58,7 @@ export function MaintenanceRecordFormDialog({ open, onClose, onSave, truck }: Ma
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <Field label="Date">
-            <input
-              type="date"
-              required
-              value={form.date}
-              onChange={(e) => update("date", e.target.value)}
-              className={inputClass}
-            />
+            <DatePicker value={form.date} onChange={(val) => update("date", val)} />
           </Field>
 
           <Field label="Odometer (km)">

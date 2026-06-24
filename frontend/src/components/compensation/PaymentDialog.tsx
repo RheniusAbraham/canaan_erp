@@ -4,6 +4,7 @@ import { useEffect, useState, type FormEvent } from "react";
 import { Dialog } from "@/components/ui/Dialog";
 import { Field, inputClass } from "@/components/ui/Field";
 import type { CompensationTransactionType } from "@/types/compensation";
+import { DatePicker } from "@/components/ui/DatePicker";
 
 type PaymentDialogProps = {
   open: boolean;
@@ -59,13 +60,7 @@ export function PaymentDialog({ open, onClose, onSave, type, personName, tripNum
         </Field>
 
         <Field label="Date">
-          <input
-            type="date"
-            required
-            value={date}
-            onChange={(e) => setDate(e.target.value)}
-            className={inputClass}
-          />
+          <DatePicker value={date} onChange={(val) => setDate(val)} />
         </Field>
 
         {tripNumbers && (

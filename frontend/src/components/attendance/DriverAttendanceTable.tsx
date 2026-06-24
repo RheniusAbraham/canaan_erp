@@ -35,14 +35,14 @@ function formatMarkedAt(markedAt: string | null): string {
 export function DriverAttendanceTable({ drivers, records, date }: DriverAttendanceTableProps) {
   if (drivers.length === 0) {
     return (
-      <div className="rounded-xl border border-gray-200 bg-white p-10 text-center text-sm text-gray-500">
+      <div className="rounded-xl border border-white/80 bg-white/90 p-10 shadow-[0_8px_30px_rgba(0,0,0,0.06)] backdrop-blur-xl text-center text-sm text-gray-500 transition-all duration-300">
         No driver records yet. Add drivers under &ldquo;Our Drivers&rdquo; to get started.
       </div>
     );
   }
 
   return (
-    <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white">
+    <div className="overflow-x-auto rounded-xl border border-white/80 bg-white/90 shadow-[0_8px_30px_rgba(0,0,0,0.06)] backdrop-blur-xl transition-all duration-300 hover:shadow-[0_12px_40px_rgba(0,0,0,0.08)]">
       <table className="w-full min-w-[1000px] text-left text-sm">
         <thead>
           <tr className="border-b border-gray-200 bg-gray-50">
@@ -61,7 +61,7 @@ export function DriverAttendanceTable({ drivers, records, date }: DriverAttendan
             const record = getAttendanceForDate(records, driver.id, date);
             const status = record?.status ?? "Not Marked";
             return (
-              <tr key={driver.id} className="hover:bg-gray-50">
+              <tr key={driver.id} className="group transition-all duration-500 ease-out hover:-translate-y-1 hover:shadow-[0_8px_20px_rgba(0,0,0,0.08)] hover:bg-white/80 relative hover:z-10 cursor-pointer">
                 <td className="px-4 py-3">
                   <Avatar photoUrl={driver.photoUrl} label={driver.name} size={44} />
                 </td>

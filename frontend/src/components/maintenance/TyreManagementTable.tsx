@@ -25,14 +25,14 @@ const healthStyles: Record<string, string> = {
 export function TyreManagementTable({ trucks, summaries, onManageTyres }: TyreManagementTableProps) {
   if (trucks.length === 0) {
     return (
-      <div className="rounded-xl border border-gray-200 bg-white p-10 text-center text-sm text-gray-500">
+      <div className="rounded-xl border border-white/80 bg-white/90 p-10 shadow-[0_8px_30px_rgba(0,0,0,0.06)] backdrop-blur-xl text-center text-sm text-gray-500 transition-all duration-300">
         No trucks yet. Add a truck under &ldquo;Our Fleet&rdquo; to get started.
       </div>
     );
   }
 
   return (
-    <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white">
+    <div className="overflow-x-auto rounded-xl border border-white/80 bg-white/90 shadow-[0_8px_30px_rgba(0,0,0,0.06)] backdrop-blur-xl transition-all duration-300 hover:shadow-[0_12px_40px_rgba(0,0,0,0.08)]">
       <table className="w-full min-w-[900px] text-left text-sm">
         <thead>
           <tr className="border-b border-gray-200 bg-gray-50">
@@ -50,7 +50,7 @@ export function TyreManagementTable({ trucks, summaries, onManageTyres }: TyreMa
           {trucks.map((truck) => {
             const summary = getTyreMaintenanceSummary(truck.id, summaries);
             return (
-              <tr key={truck.id} className="hover:bg-gray-50">
+              <tr key={truck.id} className="group transition-all duration-500 ease-out hover:-translate-y-1 hover:shadow-[0_8px_20px_rgba(0,0,0,0.08)] hover:bg-white/80 relative hover:z-10 cursor-pointer">
                 <td className="px-4 py-3">
                   <Avatar photoUrl={null} label={truck.registrationNumber} size={40} />
                 </td>

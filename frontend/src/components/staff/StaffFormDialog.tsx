@@ -7,6 +7,7 @@ import { Field, inputClass } from "@/components/ui/Field";
 import { Avatar } from "@/components/ui/Avatar";
 import { DEPARTMENT_OPTIONS, SOFTWARE_DESIGNATION_OPTIONS } from "@/lib/staff-data";
 import type { Staff } from "@/types/staff";
+import { DatePicker } from "@/components/ui/DatePicker";
 
 type StaffFormDialogProps = {
   open: boolean;
@@ -157,23 +158,11 @@ export function StaffFormDialog({ open, onClose, onSave, initialData }: StaffFor
           </Field>
 
           <Field label="Date of Birth">
-            <input
-              type="date"
-              required
-              value={form.dateOfBirth}
-              onChange={(e) => update("dateOfBirth", e.target.value)}
-              className={inputClass}
-            />
+            <DatePicker value={form.dateOfBirth} onChange={(val) => update("dateOfBirth", val)} />
           </Field>
 
           <Field label="Date of Joining">
-            <input
-              type="date"
-              required
-              value={form.dateOfJoining}
-              onChange={(e) => update("dateOfJoining", e.target.value)}
-              className={inputClass}
-            />
+            <DatePicker value={form.dateOfJoining} onChange={(val) => update("dateOfJoining", val)} />
           </Field>
 
           <Field label="Email">

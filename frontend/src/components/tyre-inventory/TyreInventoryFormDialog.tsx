@@ -5,6 +5,7 @@ import { Dialog } from "@/components/ui/Dialog";
 import { Field, inputClass } from "@/components/ui/Field";
 import { TYRE_BRAND_OPTIONS, TYRE_CONDITION_OPTIONS, TYRE_TYPE_OPTIONS } from "@/lib/tyre-inventory-data";
 import type { TyreInventoryItem } from "@/types/tyre-inventory";
+import { DatePicker } from "@/components/ui/DatePicker";
 
 type TyreInventoryFormDialogProps = {
   open: boolean;
@@ -191,12 +192,7 @@ export function TyreInventoryFormDialog({
           </Field>
 
           <Field label="Purchase Date">
-            <input
-              type="date"
-              value={form.purchaseDate}
-              onChange={(e) => update("purchaseDate", e.target.value)}
-              className={inputClass}
-            />
+            <DatePicker value={form.purchaseDate} onChange={(val) => update("purchaseDate", val)} />
           </Field>
 
           <Field label="Repair Cost">

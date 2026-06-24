@@ -70,7 +70,7 @@ export default function LeaveApprovalsPage() {
   }
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="animate-stagger flex flex-col gap-6">
       <div>
         <h1 className="text-2xl font-bold text-gray-900">Leave Approvals</h1>
         <p className="mt-1 text-sm text-gray-500">
@@ -79,15 +79,15 @@ export default function LeaveApprovalsPage() {
       </div>
 
       <div className="grid grid-cols-3 gap-4 sm:max-w-md">
-        <div className="rounded-xl border border-gray-200 bg-white p-4">
+        <div className="rounded-xl border border-white/80 bg-white/90 p-4 shadow-[0_8px_30px_rgba(0,0,0,0.06)] backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_12px_40px_rgba(0,0,0,0.12)]">
           <p className="text-xs font-medium tracking-wider text-gray-500 uppercase">Pending</p>
           <p className="mt-1 text-2xl font-bold text-yellow-600">{summary.Pending}</p>
         </div>
-        <div className="rounded-xl border border-gray-200 bg-white p-4">
+        <div className="rounded-xl border border-white/80 bg-white/90 p-4 shadow-[0_8px_30px_rgba(0,0,0,0.06)] backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_12px_40px_rgba(0,0,0,0.12)]">
           <p className="text-xs font-medium tracking-wider text-gray-500 uppercase">Approved</p>
           <p className="mt-1 text-2xl font-bold text-green-600">{summary.Approved}</p>
         </div>
-        <div className="rounded-xl border border-gray-200 bg-white p-4">
+        <div className="rounded-xl border border-white/80 bg-white/90 p-4 shadow-[0_8px_30px_rgba(0,0,0,0.06)] backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_12px_40px_rgba(0,0,0,0.12)]">
           <p className="text-xs font-medium tracking-wider text-gray-500 uppercase">Rejected</p>
           <p className="mt-1 text-2xl font-bold text-red-600">{summary.Rejected}</p>
         </div>
@@ -98,19 +98,19 @@ export default function LeaveApprovalsPage() {
           type="button"
           onClick={() => setFilter("All")}
           className={cn(
-            "relative rounded-full px-4 py-2 text-sm font-medium shadow-sm transition-all",
+            "group relative rounded-full px-4 py-2 text-sm font-medium shadow-sm transition-all duration-500 ease-[cubic-bezier(0.175,0.885,0.32,1.275)] hover:-translate-y-1 hover:shadow-md",
             filter === "All"
-              ? "bg-blue-600 text-white shadow-blue-200"
-              : "border border-gray-200 bg-white text-gray-600 hover:border-gray-300 hover:bg-gray-50"
+              ? "bg-blue-600 text-white shadow-blue-200 hover:bg-blue-700"
+              : "border border-gray-200 bg-white text-gray-600 hover:border-blue-300 hover:bg-blue-50/50 hover:text-blue-600"
           )}
         >
           All
           {pendingCounts.All > 0 && (
             <span
               className={cn(
-                "absolute -right-1.5 -top-1.5 flex h-5 min-w-5 items-center justify-center rounded-full px-1 text-[10px] font-semibold ring-2",
+                "absolute -right-1.5 -top-1.5 flex h-5 min-w-5 items-center justify-center rounded-full px-1 text-[10px] font-semibold ring-2 transition-transform duration-500 ease-[cubic-bezier(0.175,0.885,0.32,1.275)] group-hover:scale-110",
                 filter === "All"
-                  ? "bg-amber-400 text-amber-900 ring-blue-600"
+                  ? "bg-amber-400 text-amber-900 ring-blue-600 group-hover:ring-blue-700"
                   : "bg-red-500 text-white ring-white"
               )}
             >
@@ -124,19 +124,19 @@ export default function LeaveApprovalsPage() {
             type="button"
             onClick={() => setFilter(category)}
             className={cn(
-              "relative rounded-full px-4 py-2 text-sm font-medium shadow-sm transition-all",
+              "group relative rounded-full px-4 py-2 text-sm font-medium shadow-sm transition-all duration-500 ease-[cubic-bezier(0.175,0.885,0.32,1.275)] hover:-translate-y-1 hover:shadow-md",
               filter === category
-                ? "bg-blue-600 text-white shadow-blue-200"
-                : "border border-gray-200 bg-white text-gray-600 hover:border-gray-300 hover:bg-gray-50"
+                ? "bg-blue-600 text-white shadow-blue-200 hover:bg-blue-700"
+                : "border border-gray-200 bg-white text-gray-600 hover:border-blue-300 hover:bg-blue-50/50 hover:text-blue-600"
             )}
           >
             {categoryLabels[category]}
             {pendingCounts[category] > 0 && (
               <span
                 className={cn(
-                  "absolute -right-1.5 -top-1.5 flex h-5 min-w-5 items-center justify-center rounded-full px-1 text-[10px] font-semibold ring-2",
+                  "absolute -right-1.5 -top-1.5 flex h-5 min-w-5 items-center justify-center rounded-full px-1 text-[10px] font-semibold ring-2 transition-transform duration-500 ease-[cubic-bezier(0.175,0.885,0.32,1.275)] group-hover:scale-110",
                   filter === category
-                    ? "bg-amber-400 text-amber-900 ring-blue-600"
+                    ? "bg-amber-400 text-amber-900 ring-blue-600 group-hover:ring-blue-700"
                     : "bg-red-500 text-white ring-white"
                 )}
               >

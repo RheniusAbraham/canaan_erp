@@ -8,6 +8,7 @@ import type { TripClosureData } from "@/types/trip-closure";
 import { type TripSheetData, type DieselEntry, n, calcTripExpenses, calcDriverExpenses } from "@/types/trip-sheet";
 import { initialDrivers } from "@/lib/driver-data";
 import { initialTrucks } from "@/lib/truck-data";
+import { DatePicker } from "@/components/ui/DatePicker";
 
 const sh = "text-xs font-semibold uppercase tracking-wider text-gray-500 pt-4 pb-1 border-b border-gray-100 mb-3";
 const subsh = "text-xs font-medium text-gray-400 uppercase tracking-wider mt-3 mb-1";
@@ -160,7 +161,7 @@ export function TripSheetDialog({ open, trip, closure, existingSheet, readOnly, 
             </select>
           </Field>
           <Field label="Date *">
-            <input type="date" className={fc} value={form.date} readOnly={ro} onChange={(e) => set("date", e.target.value)} />
+            <DatePicker value={form.date} onChange={(val) => set("date", val)} disabled={ro} />
           </Field>
           <Field label="Driver *" className="sm:col-span-2">
             <select className={selectClass} value={form.driverId} disabled={ro} onChange={(e) => set("driverId", e.target.value)}>

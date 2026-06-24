@@ -8,6 +8,7 @@ import { addYearsToDate, generateTruckId, TRUCK_TYPE_OPTIONS } from "@/lib/truck
 import { getTyreLayout, TYRE_LAYOUT_OPTIONS } from "@/lib/tyre-layouts";
 import { TyreLayoutDiagram } from "@/components/fleet/TyreLayoutDiagram";
 import type { Truck } from "@/types/truck";
+import { DatePicker } from "@/components/ui/DatePicker";
 
 type TruckFormDialogProps = {
   open: boolean;
@@ -223,13 +224,7 @@ export function TruckFormDialog({
         <div className="rounded-lg border border-gray-200 p-4">
           <h3 className="mb-3 text-sm font-semibold text-gray-900">RC Details</h3>
           <Field label="RC Date">
-            <input
-              type="date"
-              required
-              value={form.rcDate}
-              onChange={(e) => update("rcDate", e.target.value)}
-              className={inputClass}
-            />
+            <DatePicker value={form.rcDate} onChange={(val) => update("rcDate", val)} />
           </Field>
 
           <Field label="RC Document Proof (Image)" className="mt-4">
@@ -258,26 +253,14 @@ export function TruckFormDialog({
           <h3 className="mb-3 text-sm font-semibold text-gray-900">FC Details</h3>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Field label="FC Date">
-              <input
-                type="date"
-                required
-                value={form.fcDate}
-                onChange={(e) => handleFcDateChange(e.target.value)}
-                className={inputClass}
-              />
+              <DatePicker value={form.fcDate} onChange={(val) => handleFcDateChange(val)} />
             </Field>
 
             <Field label="FC Validity Date">
-              <input
-                type="date"
-                required
-                value={form.fcExpiryDate}
-                onChange={(e) => {
+              <DatePicker value={form.fcExpiryDate} onChange={(val) => {
                   setFcExpiryTouched(true);
-                  update("fcExpiryDate", e.target.value);
-                }}
-                className={inputClass}
-              />
+                  update("fcExpiryDate", val);
+                }} />
             </Field>
           </div>
 
@@ -304,13 +287,7 @@ export function TruckFormDialog({
           <h3 className="mb-3 text-sm font-semibold text-gray-900">Road Tax</h3>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Field label="Road Tax Validity Date">
-              <input
-                type="date"
-                required
-                value={form.roadTaxDate}
-                onChange={(e) => update("roadTaxDate", e.target.value)}
-                className={inputClass}
-              />
+              <DatePicker value={form.roadTaxDate} onChange={(val) => update("roadTaxDate", val)} />
             </Field>
 
             <Field label="Road Tax Number">
@@ -345,13 +322,7 @@ export function TruckFormDialog({
         </div>
 
         <Field label="Insurance Expiry Date">
-          <input
-            type="date"
-            required
-            value={form.insuranceExpiryDate}
-            onChange={(e) => update("insuranceExpiryDate", e.target.value)}
-            className={inputClass}
-          />
+          <DatePicker value={form.insuranceExpiryDate} onChange={(val) => update("insuranceExpiryDate", val)} />
         </Field>
 
         <div className="rounded-lg border border-gray-200 p-4">
@@ -369,13 +340,7 @@ export function TruckFormDialog({
             </Field>
 
             <Field label="National Permit Validity Date">
-              <input
-                type="date"
-                required
-                value={form.nationalPermitDate}
-                onChange={(e) => update("nationalPermitDate", e.target.value)}
-                className={inputClass}
-              />
+              <DatePicker value={form.nationalPermitDate} onChange={(val) => update("nationalPermitDate", val)} />
             </Field>
           </div>
 
@@ -413,13 +378,7 @@ export function TruckFormDialog({
             </Field>
 
             <Field label="Local Permit Validity Date">
-              <input
-                type="date"
-                required
-                value={form.localPermitDate}
-                onChange={(e) => update("localPermitDate", e.target.value)}
-                className={inputClass}
-              />
+              <DatePicker value={form.localPermitDate} onChange={(val) => update("localPermitDate", val)} />
             </Field>
           </div>
 
@@ -445,13 +404,7 @@ export function TruckFormDialog({
         <div className="rounded-lg border border-gray-200 p-4">
           <h3 className="mb-3 text-sm font-semibold text-gray-900">Pollution Certificate</h3>
           <Field label="Pollution Certificate Validity Date">
-            <input
-              type="date"
-              required
-              value={form.pollutionCertificateDate}
-              onChange={(e) => update("pollutionCertificateDate", e.target.value)}
-              className={inputClass}
-            />
+            <DatePicker value={form.pollutionCertificateDate} onChange={(val) => update("pollutionCertificateDate", val)} />
           </Field>
 
           <Field label="Pollution Certificate Proof (PDF)" className="mt-4">

@@ -6,6 +6,7 @@ import { Dialog } from "@/components/ui/Dialog";
 import { inputClass } from "@/components/ui/Field";
 import type { MaintenanceRecord } from "@/types/truck-maintenance";
 import type { Truck } from "@/types/truck";
+import { DatePicker } from "@/components/ui/DatePicker";
 
 type MaintenanceRecordHistoryDialogProps = {
   open: boolean;
@@ -164,21 +165,11 @@ export function MaintenanceRecordHistoryDialog({ open, onClose, truck, records }
             <>
               <label className="flex flex-col gap-1.5">
                 <span className="text-sm font-medium text-gray-700">From</span>
-                <input
-                  type="date"
-                  value={customFrom}
-                  onChange={(e) => setCustomFrom(e.target.value)}
-                  className={inputClass}
-                />
+                <DatePicker value={customFrom} onChange={(val) => setCustomFrom(val)} />
               </label>
               <label className="flex flex-col gap-1.5">
                 <span className="text-sm font-medium text-gray-700">To</span>
-                <input
-                  type="date"
-                  value={customTo}
-                  onChange={(e) => setCustomTo(e.target.value)}
-                  className={inputClass}
-                />
+                <DatePicker value={customTo} onChange={(val) => setCustomTo(val)} />
               </label>
             </>
           )}

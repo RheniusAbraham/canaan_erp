@@ -20,6 +20,7 @@ import type { Trip } from "@/types/trip";
 import type { Driver } from "@/types/driver";
 import type { Truck } from "@/types/truck";
 import type { Customer } from "@/types/customer";
+import { DatePicker } from "@/components/ui/DatePicker";
 
 type AssignableDriver = {
   driver: Driver;
@@ -140,13 +141,7 @@ export function TripFormDialog({
             </Field>
 
             <Field label="Booking Created Date">
-              <input
-                type="date"
-                required
-                value={form.bookingCreatedDate}
-                onChange={(e) => handleBookingDateChange(e.target.value)}
-                className={inputClass}
-              />
+              <DatePicker value={form.bookingCreatedDate} onChange={(val) => handleBookingDateChange(val)} />
             </Field>
 
             <Field label="Trip Category">
@@ -387,13 +382,7 @@ export function TripFormDialog({
             </Field>
 
             <Field label="Scheduled Trip Date">
-              <input
-                type="date"
-                required
-                value={form.scheduledDate}
-                onChange={(e) => update("scheduledDate", e.target.value)}
-                className={inputClass}
-              />
+              <DatePicker value={form.scheduledDate} onChange={(val) => update("scheduledDate", val)} />
             </Field>
 
             <Field label="Assigned Vehicle" className="sm:col-span-2">

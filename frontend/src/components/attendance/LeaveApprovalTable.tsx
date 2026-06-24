@@ -39,14 +39,14 @@ function formatDateTime(date: string): string {
 export function LeaveApprovalTable({ requests, onApprove, onReject }: LeaveApprovalTableProps) {
   if (requests.length === 0) {
     return (
-      <div className="rounded-xl border border-gray-200 bg-white p-6 text-center text-sm text-gray-500">
+      <div className="rounded-xl border border-white/80 bg-white/90 p-6 shadow-[0_8px_30px_rgba(0,0,0,0.06)] backdrop-blur-xl text-center text-sm text-gray-500 transition-all duration-300">
         No leave requests.
       </div>
     );
   }
 
   return (
-    <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white">
+    <div className="overflow-x-auto rounded-xl border border-white/80 bg-white/90 shadow-[0_8px_30px_rgba(0,0,0,0.06)] backdrop-blur-xl transition-all duration-300 hover:shadow-[0_12px_40px_rgba(0,0,0,0.08)]">
       <table className="w-full min-w-[900px] text-left text-sm">
         <thead>
           <tr className="border-b border-gray-200 bg-gray-50">
@@ -62,7 +62,7 @@ export function LeaveApprovalTable({ requests, onApprove, onReject }: LeaveAppro
         </thead>
         <tbody className="divide-y divide-gray-100">
           {requests.map((request) => (
-            <tr key={request.id} className="hover:bg-gray-50">
+            <tr key={request.id} className="group transition-all duration-500 ease-out hover:-translate-y-1 hover:shadow-[0_8px_20px_rgba(0,0,0,0.08)] hover:bg-white/80 relative hover:z-10 cursor-pointer">
               <td className="px-4 py-3">
                 <div className="font-medium text-gray-900">{request.applicantName}</div>
                 <div className="text-xs text-gray-500">{request.applicantCode}</div>

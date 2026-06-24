@@ -30,7 +30,7 @@ const statusStyles: Record<Trip["status"], string> = {
 export function TripTable({ trips, drivers, trucks, customers, onCancel, onCloseTrip, closedTripIds }: TripTableProps) {
   if (trips.length === 0) {
     return (
-      <div className="rounded-xl border border-gray-200 bg-white p-10 text-center text-sm text-gray-500">
+      <div className="rounded-xl border border-white/80 bg-white/90 p-10 shadow-[0_8px_30px_rgba(0,0,0,0.06)] backdrop-blur-xl text-center text-sm text-gray-500 transition-all duration-300">
         No trips assigned yet. Click &ldquo;Assign Trip&rdquo; to create one.
       </div>
     );
@@ -41,7 +41,7 @@ export function TripTable({ trips, drivers, trucks, customers, onCancel, onClose
   const customerById = new Map(customers.map((customer) => [customer.id, customer]));
 
   return (
-    <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white">
+    <div className="overflow-x-auto rounded-xl border border-white/80 bg-white/90 shadow-[0_8px_30px_rgba(0,0,0,0.06)] backdrop-blur-xl transition-all duration-300 hover:shadow-[0_12px_40px_rgba(0,0,0,0.08)]">
       <table className="w-full min-w-[1200px] text-left text-sm">
         <thead>
           <tr className="border-b border-gray-200 bg-gray-50">
@@ -72,7 +72,7 @@ export function TripTable({ trips, drivers, trucks, customers, onCancel, onClose
             const customer = customerById.get(trip.customerId);
 
             return (
-              <tr key={trip.id} className="hover:bg-gray-50">
+              <tr key={trip.id} className="group transition-all duration-500 ease-out hover:-translate-y-1 hover:shadow-[0_8px_20px_rgba(0,0,0,0.08)] hover:bg-white/80 relative hover:z-10 cursor-pointer">
                 <td className="px-4 py-3 font-medium text-gray-900">{trip.tripId}</td>
                 <td className="px-4 py-3 text-gray-600">{trip.bookingReferenceNo}</td>
                 <td className="px-4 py-3 text-gray-600">{customer?.name ?? "—"}</td>

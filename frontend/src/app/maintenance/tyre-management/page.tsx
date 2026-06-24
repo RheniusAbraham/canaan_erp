@@ -20,7 +20,7 @@ export default function TyreManagementPage() {
   }
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="animate-stagger flex flex-col gap-6">
       <div>
         <h1 className="text-2xl font-bold text-gray-900">Tyre Management</h1>
         <p className="mt-1 text-sm text-gray-500">Track tyre health and layouts across the fleet</p>

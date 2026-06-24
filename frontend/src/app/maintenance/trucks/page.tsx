@@ -57,7 +57,7 @@ export default function TruckMaintenancePage() {
   const attentionItems = status.filter((item) => item.status === "attention");
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="animate-stagger flex flex-col gap-6">
       <div>
         <h1 className="text-2xl font-bold text-gray-900">Truck Maintenance</h1>
         <p className="mt-1 text-sm text-gray-500">Track the health and reliability of every truck in the fleet</p>

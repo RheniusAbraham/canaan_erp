@@ -23,14 +23,14 @@ const statusStyles: Record<string, string> = {
 export function CustomerDestinationTable({ destinations, customers, onEdit, onDelete }: CustomerDestinationTableProps) {
   if (destinations.length === 0) {
     return (
-      <div className="rounded-xl border border-gray-200 bg-white p-10 text-center text-sm text-gray-500">
+      <div className="rounded-xl border border-white/80 bg-white/90 p-10 shadow-[0_8px_30px_rgba(0,0,0,0.06)] backdrop-blur-xl text-center text-sm text-gray-500 transition-all duration-300">
         No customer destinations yet. Click &ldquo;Add Destination&rdquo; to create one.
       </div>
     );
   }
 
   return (
-    <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white">
+    <div className="overflow-x-auto rounded-xl border border-white/80 bg-white/90 shadow-[0_8px_30px_rgba(0,0,0,0.06)] backdrop-blur-xl transition-all duration-300 hover:shadow-[0_12px_40px_rgba(0,0,0,0.08)]">
       <table className="w-full min-w-[800px] text-left text-sm">
         <thead>
           <tr className="border-b border-gray-200 bg-gray-50">
@@ -49,7 +49,7 @@ export function CustomerDestinationTable({ destinations, customers, onEdit, onDe
             const customer = customers.find((c) => c.id === entry.customerId);
             const effectiveStatus = customer?.status === "BLACKLISTED" ? "BLACKLISTED" : entry.status;
             return (
-              <tr key={entry.id} className="hover:bg-gray-50">
+              <tr key={entry.id} className="group transition-all duration-500 ease-out hover:-translate-y-1 hover:shadow-[0_8px_20px_rgba(0,0,0,0.08)] hover:bg-white/80 relative hover:z-10 cursor-pointer">
                 <td className="px-4 py-3 font-medium text-gray-900">{customer?.name ?? "—"}</td>
                 <td className="px-4 py-3 text-gray-600">{entry.destinationName}</td>
                 <td className="px-4 py-3 text-gray-600">{entry.destinationState}</td>

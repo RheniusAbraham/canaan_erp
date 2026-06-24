@@ -23,7 +23,7 @@ export default function TripFinalizationPage() {
     `₹${n.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="animate-stagger flex flex-col gap-6">
       <div>
         <h1 className="text-2xl font-bold text-gray-900">Trip Finalization</h1>
         <p className="mt-1 text-sm text-gray-500">
@@ -32,12 +32,12 @@ export default function TripFinalizationPage() {
       </div>
 
       {verifiedTrips.length === 0 ? (
-        <div className="rounded-xl border border-gray-200 bg-white p-10 text-center text-sm text-gray-500">
+        <div className="rounded-xl border border-white/80 bg-white/90 p-10 shadow-[0_8px_30px_rgba(0,0,0,0.06)] backdrop-blur-xl text-center text-sm text-gray-500 transition-all duration-300">
           No verified trips yet. Verify trip data on the{" "}
           <a href="/trips/verification" className="text-blue-600 underline">Trip Verification</a> page first.
         </div>
       ) : (
-        <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white">
+        <div className="overflow-x-auto rounded-xl border border-white/80 bg-white/90 shadow-[0_8px_30px_rgba(0,0,0,0.06)] backdrop-blur-xl transition-all duration-300 hover:shadow-[0_12px_40px_rgba(0,0,0,0.08)]">
           <table className="w-full min-w-[1050px] text-left text-sm">
             <thead>
               <tr className="border-b border-gray-200 bg-gray-50">
@@ -62,7 +62,7 @@ export default function TripFinalizationPage() {
                 const totalBilling   = sheet ? calcTripExpenses(sheet) : 0;
 
                 return (
-                  <tr key={trip.id} className="hover:bg-gray-50">
+                  <tr key={trip.id} className="group transition-all duration-500 ease-out hover:-translate-y-1 hover:shadow-[0_8px_20px_rgba(0,0,0,0.08)] hover:bg-white/80 relative hover:z-10 cursor-pointer">
                     <td className="px-4 py-3 font-medium text-gray-900">{trip.tripId}</td>
                     <td className="px-4 py-3 text-gray-600">{trip.bookingReferenceNo}</td>
                     <td className="px-4 py-3 text-gray-600">{customer?.name ?? "—"}</td>
