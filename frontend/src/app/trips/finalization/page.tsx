@@ -6,7 +6,7 @@ import { initialDrivers } from "@/lib/driver-data";
 import { initialTrucks } from "@/lib/truck-data";
 import { initialCustomers } from "@/lib/customer-data";
 import { initialTrips } from "@/lib/trip-data";
-import { sumCharges } from "@/types/trip-sheet";
+import { n, calcTripExpenses } from "@/types/trip-sheet";
 
 export default function TripFinalizationPage() {
   const { closures, sheets, verifications } = useTripWorkflow();
@@ -42,7 +42,7 @@ export default function TripFinalizationPage() {
             <thead>
               <tr className="border-b border-gray-200 bg-gray-50">
                 {["Trip ID", "Booking Ref", "Customer", "Route", "Driver", "Vehicle",
-                  "Bill To", "Total Transport", "Total Billing", "Actions"].map((col) => (
+                  "Bill To", "Hire Amount", "Total Expense", "Actions"].map((col) => (
                   <th key={col} className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-500">
                     {col}
                   </th>
@@ -58,12 +58,8 @@ export default function TripFinalizationPage() {
                 const customer = customerById.get(trip.customerId);
                 const isInvoiced = invoiced.has(trip.id);
 
-                const totalTransport = sheet
-                  ? sumCharges(sheet.baseTransportHire, sheet.transportHaltCharges, sheet.transportUnloadingCharges, sheet.transportLiftingCharges, sheet.transportWeighmentCharges)
-                  : 0;
-                const totalBilling = sheet
-                  ? sumCharges(sheet.billingBaseHire, sheet.billingHaltCharges, sheet.billingUnloadingCharges, sheet.billingLiftingCharges, sheet.billingWeighmentCharges)
-                  : 0;
+                const totalTransport = sheet ? n(sheet.hireAmount) : 0;
+                const totalBilling   = sheet ? calcTripExpenses(sheet) : 0;
 
                 return (
                   <tr key={trip.id} className="hover:bg-gray-50">

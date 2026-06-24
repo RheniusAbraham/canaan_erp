@@ -74,6 +74,7 @@ export const sidebarSections: NavSection[] = [
       { label: "Truck Maintenance", href: "/maintenance/trucks", icon: Wrench },
       { label: "Tyre Management", href: "/maintenance/tyre-management", icon: CircleDot },
       { label: "Tyre Inventory", href: "/maintenance/tyre-inventory", icon: Boxes },
+      { label: "Mileage History", href: "/maintenance/mileage-history", icon: Gauge },
       { label: "Compliance & Renewals", href: "/maintenance/compliance", icon: ShieldCheck },
     ],
   },

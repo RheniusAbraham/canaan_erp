@@ -4,7 +4,7 @@ import { Dialog } from "@/components/ui/Dialog";
 import type { Trip } from "@/types/trip";
 import type { TripClosureData } from "@/types/trip-closure";
 import type { TripSheetData } from "@/types/trip-sheet";
-import { sumCharges } from "@/types/trip-sheet";
+import { n, calcTripExpenses } from "@/types/trip-sheet";
 
 type VerifyTripDialogProps = {
   open: boolean;
@@ -39,16 +39,11 @@ export function VerifyTripDialog({
 }: VerifyTripDialogProps) {
   if (!trip) return null;
 
-  const fmt = (n: number) =>
-    `₹${n.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  const fmt = (v: number) =>
+    `₹${v.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
-  const totalTransport = sheet
-    ? sumCharges(sheet.baseTransportHire, sheet.transportHaltCharges, sheet.transportUnloadingCharges, sheet.transportLiftingCharges, sheet.transportWeighmentCharges)
-    : 0;
-
-  const totalBilling = sheet
-    ? sumCharges(sheet.billingBaseHire, sheet.billingHaltCharges, sheet.billingUnloadingCharges, sheet.billingLiftingCharges, sheet.billingWeighmentCharges)
-    : 0;
+  const hireAmount   = sheet ? n(sheet.hireAmount) : 0;
+  const totalExpense = sheet ? calcTripExpenses(sheet) : 0;
 
   return (
     <Dialog open={open} onClose={onClose} title={`Verify Trip Data — ${trip.tripId}`} className="max-w-2xl">
@@ -96,33 +91,28 @@ export function VerifyTripDialog({
           <Row label="Halt Remarks" value={closure?.haltRemarks ?? ""} />
         </section>
 
-        {/* Transport Charges */}
+        {/* Trip Sheet Summary */}
         <section>
-          <p className={sectionHeadingClass}>Transport Charges</p>
+          <p className={sectionHeadingClass}>Trip Sheet Summary</p>
           <Divider />
-          <Row label="Base Transport Hire" value={sheet ? `₹${sheet.baseTransportHire}` : ""} />
-          <Row label="Halt Charges" value={sheet ? `₹${sheet.transportHaltCharges}` : ""} />
-          <Row label="Unloading Charges" value={sheet ? `₹${sheet.transportUnloadingCharges}` : ""} />
-          <Row label="Lifting Charges" value={sheet ? `₹${sheet.transportLiftingCharges}` : ""} />
-          <Row label="Weighment Charges" value={sheet ? `₹${sheet.transportWeighmentCharges}` : ""} />
+          <Row label="Trip Type" value={sheet?.tripType ?? ""} />
+          <Row label="Container No" value={sheet?.containerNo ?? ""} />
+          <Row label="Route" value={sheet ? `${sheet.from} → ${sheet.to}` : ""} />
+          <Row label="Start km" value={sheet?.startKm ?? ""} />
+          <Row label="End km" value={sheet?.endKm ?? ""} />
+          <Row label="Total km" value={sheet?.totalKm ?? ""} />
+          <Row label="Total Diesel" value={sheet ? `${sheet.totalDiesel} L` : ""} />
+          <Row label="Diesel Expense" value={sheet ? `₹${sheet.dieselExpense}` : ""} />
+          <Row label="Driver Pay" value={sheet ? `₹${sheet.driverPay}` : ""} />
+          <Row label="Driver Balance" value={sheet ? `₹${sheet.driverBalance}` : ""} />
+          <Row label="Toll Charges" value={sheet ? `₹${sheet.tollCharges}` : ""} />
           <div className="mt-2 flex items-center justify-between rounded-lg bg-blue-50 px-3 py-2 text-sm">
-            <span className="font-semibold text-gray-700">Total Transport Charges</span>
-            <span className="font-bold text-blue-700">{fmt(totalTransport)}</span>
+            <span className="font-semibold text-gray-700">Hire Amount</span>
+            <span className="font-bold text-blue-700">{fmt(hireAmount)}</span>
           </div>
-        </section>
-
-        {/* Customer Billing */}
-        <section>
-          <p className={sectionHeadingClass}>Customer Billing</p>
-          <Divider />
-          <Row label="Billing Base Hire" value={sheet ? `₹${sheet.billingBaseHire}` : ""} />
-          <Row label="Halt Charges" value={sheet ? `₹${sheet.billingHaltCharges}` : ""} />
-          <Row label="Unloading Charges" value={sheet ? `₹${sheet.billingUnloadingCharges}` : ""} />
-          <Row label="Lifting Charges" value={sheet ? `₹${sheet.billingLiftingCharges}` : ""} />
-          <Row label="Weighment Charges" value={sheet ? `₹${sheet.billingWeighmentCharges}` : ""} />
           <div className="mt-2 flex items-center justify-between rounded-lg bg-emerald-50 px-3 py-2 text-sm">
-            <span className="font-semibold text-gray-700">Total Billing Amount</span>
-            <span className="font-bold text-emerald-700">{fmt(totalBilling)}</span>
+            <span className="font-semibold text-gray-700">Total Expense</span>
+            <span className="font-bold text-emerald-700">{fmt(totalExpense)}</span>
           </div>
         </section>
 

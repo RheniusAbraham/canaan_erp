@@ -10,7 +10,7 @@ import { initialCustomers } from "@/lib/customer-data";
 import { initialTrips } from "@/lib/trip-data";
 import type { Trip } from "@/types/trip";
 import type { TripSheetData } from "@/types/trip-sheet";
-import { sumCharges } from "@/types/trip-sheet";
+import { n, calcTripExpenses } from "@/types/trip-sheet";
 
 type SheetDialogMode = "view" | "edit";
 
@@ -78,7 +78,7 @@ export default function TripVerificationPage() {
             <thead>
               <tr className="border-b border-gray-200 bg-gray-50">
                 {["Trip ID", "Booking Ref", "Customer", "Route", "Driver", "Vehicle",
-                  "Total Transport", "Total Billing", "Status", "Actions"].map((col) => (
+                  "Hire Amount", "Total Expense", "Status", "Actions"].map((col) => (
                   <th key={col} className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-500">
                     {col}
                   </th>
@@ -95,16 +95,8 @@ export default function TripVerificationPage() {
                 const isVerified = verifications.has(trip.id);
                 const isFlagged = flags.has(trip.id);
 
-                const totalTransport = sumCharges(
-                  sheet.baseTransportHire, sheet.transportHaltCharges,
-                  sheet.transportUnloadingCharges, sheet.transportLiftingCharges,
-                  sheet.transportWeighmentCharges,
-                );
-                const totalBilling = sumCharges(
-                  sheet.billingBaseHire, sheet.billingHaltCharges,
-                  sheet.billingUnloadingCharges, sheet.billingLiftingCharges,
-                  sheet.billingWeighmentCharges,
-                );
+                const totalTransport = n(sheet.hireAmount);
+                const totalBilling   = calcTripExpenses(sheet);
 
                 return (
                   <tr key={trip.id} className="hover:bg-gray-50">
