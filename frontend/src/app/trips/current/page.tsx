@@ -8,7 +8,7 @@ import type { Driver } from "@/types/driver";
 import type { Truck } from "@/types/truck";
 import type { Customer } from "@/types/customer";
 
-const CURRENT_STATUSES: Trip["status"][] = ["Assigned", "Started"];
+const CURRENT_STATUSES: Trip["status"][] = ["Started"];
 
 export default function CurrentTripsPage() {
   const [allTrips, setAllTrips] = useState<Trip[]>([]);

@@ -88,6 +88,9 @@ export default function AssignTripsPage() {
     setTrips((prev) => prev.map((trip) => (trip.id === id ? updated : trip)));
   }
 
+  // Show only Assigned trips in Assign Trips page
+  const assignedTrips = trips.filter((trip) => trip.status === "Assigned");
+
   if (loading) return <div className="p-6 text-sm text-gray-500">Loading...</div>;
 
   return (
@@ -110,7 +113,7 @@ export default function AssignTripsPage() {
       </div>
 
       <TripTable
-        trips={trips}
+        trips={assignedTrips}
         drivers={drivers}
         trucks={trucks}
         customers={customers}
