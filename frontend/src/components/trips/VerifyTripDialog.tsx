@@ -92,9 +92,8 @@ export function VerifyTripDialog({
           <Row label="Bill To" value={closure?.billTo ?? ""} />
           <Row label="Trip Completed Date" value={closure?.tripCompletedDate ?? ""} />
           <Row label="Trip Closing Date" value={closure?.tripClosingDate ?? ""} />
-          <Row label="Hire Amount" value={closure ? `₹${closure.hireAmount}` : ""} />
-          <Row label="Transport Amount" value={closure ? `₹${closure.transportAmount}` : ""} />
-          <Row label="Billing Amount" value={closure ? `₹${closure.billingAmount}` : ""} />
+          <Row label="Transport Hire Amount" value={closure ? `₹${closure.transportHireAmount}` : ""} />
+          <Row label="Billing Hire Amount" value={closure ? `₹${closure.billingHireAmount}` : ""} />
           <Row label="Driver Advance" value={closure ? `₹${closure.driverAdvanceAmount}` : ""} />
           <Row label="Payment Mode" value={closure?.paymentMode ?? ""} />
           <Row label="Company Halt Days" value={closure?.companyHaltDays ?? ""} />

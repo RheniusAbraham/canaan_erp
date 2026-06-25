@@ -3,19 +3,58 @@ export type PaymentMode = "Cash" | "UPI" | "Bank Transfer" | "Cheque" | "NEFT / 
 export type TripClosureData = {
   tripId: string;
 
-  // Trip Summary — user input
+  // Edit Booking Section (Auto-fetched)
+  bookingReferenceNo: string;
+  tripCategory: string;
+  movementCategory: string;
+  customerName: string;
+  containerSpecification: string;
+  cargoClassification: string;
+  containerNumber: string;
+  containerNumber1: string;
+  containerNumber2: string;
+  cargoReference: string;
+  bookingDate: string;
+  originLocation: string;
+  destinationLocation: string;
+  rateType: string;
+  releaseOrderReference: string;
+  shippingLine: string;
+  vesselName: string;
+  shipperConsigneeName: string;
+
+  // Transporter Details Section (Auto-fetched)
+  transportMethod: string;
+  transporter: string;
+  tripDate: string;
+  assignedTruckDetails: string;
+  paymentType: string;
+  customerAdvance: string;
+  dieselAdvance: string;
+  driverAdvanceAmount: string;
+  driverAdvancePaymentMethod: string;
   billTo: string;
+
+  // Transporter Price Details Section (Editable)
+  transportHireAmount: string;
+  transportCrossingAmount: string;
+  transportHalt: string;
+  transportUnloading: string;
+  transportLiftingCharges: string;
+  transportWeighment: string;
+  totalTransportAmount: string;
+
+  // Billing Price Details Section (Editable)
+  billingHireAmount: string;
+  billingHalt: string;
+  billingUnloading: string;
+  billingLiftingCharges: string;
+  billingWeighment: string;
+  totalBillingAmount: string;
 
   // Trip Completion
   tripCompletedDate: string;
   tripClosingDate: string;
-
-  // Financial Settlement
-  hireAmount: string;
-  transportAmount: string;
-  billingAmount: string;
-  driverAdvanceAmount: string;
-  additionalDriverAdvanceAmount: string;
   paymentMode: PaymentMode | "";
 
   // Trip Distance Details
@@ -52,6 +91,7 @@ export type TripClosureData = {
   tollExpenses: string;
 
   // Halt Information (kept for backward compatibility)
+  additionalDriverAdvanceAmount: string;
   companyHaltDays: string;
   partyHaltDays: string;
 };
